@@ -506,8 +506,8 @@ export default function MyWatchlistPage() {
     return avgB - avgA;
   });
 
-  const maxSlots = 5;
-  const userMaxSlots = isPremium ? 5 : 1;
+  const maxSlots = 6;
+  const userMaxSlots = isPremium ? 6 : 1;
   const emptySlotCount = Math.max(0, userMaxSlots - watchlistAssets.length);
   const lockedSlotCount = isPremium ? 0 : Math.max(0, maxSlots - userMaxSlots - watchlistAssets.length);
 
@@ -542,7 +542,7 @@ export default function MyWatchlistPage() {
         </p>
         {!isPremium && (
           <p className="text-amber-500 text-xs font-medium">
-            Upgrade to Premium for 5 asset slots
+            Upgrade to Premium for 6 asset slots
           </p>
         )}
         <p className="text-slate-500 text-xs">
@@ -558,7 +558,7 @@ export default function MyWatchlistPage() {
           <div className="text-white text-xl">Loading watchlist...</div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {sortedAssetsWithData.map((asset, index) => {
             const averageSignal = calculateAverageSignal(asset);
             const colors = getSignalColors(averageSignal);
