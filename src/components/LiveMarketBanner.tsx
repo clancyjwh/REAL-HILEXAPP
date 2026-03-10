@@ -94,25 +94,38 @@ export default function LiveMarketBanner() {
   if (assets.length === 0) return null;
 
   return (
-    <div className="w-full bg-slate-950 border-b border-slate-700 overflow-hidden py-3">
-      <div className="relative flex">
-        <div className="animate-scroll flex gap-8 whitespace-nowrap will-change-transform">
+    <div className="w-full overflow-hidden relative" style={{ background: 'rgba(2,6,23,0.95)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+      {/* Left fade */}
+      <div className="absolute left-0 top-0 bottom-0 w-20 z-10 pointer-events-none" style={{ background: 'linear-gradient(90deg, rgba(2,6,23,1) 0%, transparent 100%)' }} />
+      {/* Right fade */}
+      <div className="absolute right-0 top-0 bottom-0 w-20 z-10 pointer-events-none" style={{ background: 'linear-gradient(270deg, rgba(2,6,23,1) 0%, transparent 100%)' }} />
+
+      {/* LIVE badge */}
+      <div className="absolute left-4 top-1/2 -translate-y-1/2 z-20 flex items-center gap-1.5 px-2.5 py-1 rounded-full" style={{ background: 'rgba(0,216,255,0.1)', border: '1px solid rgba(0,216,255,0.25)' }}>
+        <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#00D8FF' }} />
+        <span className="text-[10px] font-bold tracking-widest uppercase" style={{ color: '#00D8FF', fontFamily: 'JetBrains Mono, monospace' }}>LIVE</span>
+      </div>
+
+      <div className="pl-24 py-2.5 relative flex">
+        <div className="animate-scroll flex items-center gap-6 whitespace-nowrap will-change-transform">
           {[...assets, ...assets, ...assets, ...assets].map((asset, index) => (
-            <div
-              key={`${asset.symbol}-${index}`}
-              className={`${getSignalTextColor(asset.signal)} font-semibold text-base`}
-            >
-              {asset.symbol}: {asset.signal > 0 ? '+' : ''}{asset.signal.toFixed(1)}
+            <div key={`${asset.symbol}-${index}`} className="flex items-center gap-1.5">
+              <span className="text-slate-400 text-xs font-semibold tracking-wider" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{asset.symbol}</span>
+              <span className={`text-sm font-bold ${getSignalTextColor(asset.signal)}`} style={{ fontFamily: 'JetBrains Mono, monospace' }}>
+                {asset.signal > 0 ? '+' : ''}{asset.signal.toFixed(1)}
+              </span>
+              <span className="text-slate-700 text-xs">•</span>
             </div>
           ))}
         </div>
-        <div className="animate-scroll flex gap-8 whitespace-nowrap will-change-transform">
+        <div className="animate-scroll flex items-center gap-6 whitespace-nowrap will-change-transform">
           {[...assets, ...assets, ...assets, ...assets].map((asset, index) => (
-            <div
-              key={`${asset.symbol}-duplicate-${index}`}
-              className={`${getSignalTextColor(asset.signal)} font-semibold text-base`}
-            >
-              {asset.symbol}: {asset.signal > 0 ? '+' : ''}{asset.signal.toFixed(1)}
+            <div key={`${asset.symbol}-dup-${index}`} className="flex items-center gap-1.5">
+              <span className="text-slate-400 text-xs font-semibold tracking-wider" style={{ fontFamily: 'JetBrains Mono, monospace' }}>{asset.symbol}</span>
+              <span className={`text-sm font-bold ${getSignalTextColor(asset.signal)}`} style={{ fontFamily: 'JetBrains Mono, monospace' }}>
+                {asset.signal > 0 ? '+' : ''}{asset.signal.toFixed(1)}
+              </span>
+              <span className="text-slate-700 text-xs">•</span>
             </div>
           ))}
         </div>

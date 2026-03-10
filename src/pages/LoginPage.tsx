@@ -78,10 +78,10 @@ export default function LoginPage() {
             </div>
 
             <h1 className="text-3xl font-bold text-white text-center mb-2 tracking-tight">
-              Welcome to HilEX
+              HilEX <span style={{ color: '#00D8FF' }}>Optimized Trends</span>
             </h1>
             <p className="text-slate-400 text-center mb-8 font-mono text-sm">
-              Optimized Trends Platform
+              Sign in to your account
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-5">
