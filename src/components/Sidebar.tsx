@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { getAvailableFeatures } from '../config/features';
 import { useAuth } from '../contexts/AuthContext';
 import NotificationBell from './NotificationBell';
+import { supabase } from '../lib/supabase';
 
 interface NavItem {
   icon: React.ElementType;
@@ -15,12 +16,29 @@ export default function Sidebar() {
   const { user, isPremium } = useAuth();
   const availableFeatures = getAvailableFeatures();
 
-  const navItems: NavItem[] = [
+  const BESPOKE_PORTAL_URL = 'https://hilex-bespoke-portal.vercel.app';
+
+  const handleBespokeSSO = async () => {
+    try {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error || !session) {
+        console.error('No active session for SSO:', error);
+        window.open(BESPOKE_PORTAL_URL, '_blank');
+        return;
+      }
+      const ssoUrl = `${BESPOKE_PORTAL_URL}/index.html#access_token=${session.access_token}&refresh_token=${session.refresh_token}`;
+      window.open(ssoUrl, '_blank', 'noopener,noreferrer');
+    } catch (err) {
+      console.error('Bespoke SSO error:', err);
+      window.open(BESPOKE_PORTAL_URL, '_blank');
+    }
+  };
+
+  const navItems = [
     { icon: Home, label: 'Home', path: '/' },
     availableFeatures.showTools && { icon: Wrench, label: 'Tools', path: '/tools' },
     { icon: Star, label: 'My Watchlist', path: '/my-watchlist' },
     { icon: MessageSquare, label: 'Chatroom', path: '/chatroom' },
-    { icon: Puzzle, label: 'Bespoke Projects', path: '/bespoke-projects' },
     { icon: BookOpen, label: 'Education Centre', path: '/documentation' },
     { icon: Newspaper, label: 'Daily Insights', path: '/daily-insights' },
     { icon: UserCircle, label: 'My Account', path: '/my-account' },
@@ -51,13 +69,13 @@ export default function Sidebar() {
                 <Link
                   to={item.path}
                   className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200 group ${isActive
-                      ? 'bg-[#00D8FF]/10 text-[#00D8FF] border border-[#00D8FF]/30 shadow-[0_0_12px_rgba(0,216,255,0.15)]'
-                      : 'text-slate-400 hover:bg-white/5 hover:text-white border border-transparent'
+                    ? 'bg-[#00D8FF]/10 text-[#00D8FF] border border-[#00D8FF]/30 shadow-[0_0_12px_rgba(0,216,255,0.15)]'
+                    : 'text-slate-400 hover:bg-white/5 hover:text-white border border-transparent'
                     }`}
                 >
                   <Icon className={`w-4 h-4 flex-shrink-0 transition-all duration-200 ${isActive
-                      ? 'text-[#00D8FF] drop-shadow-[0_0_6px_rgba(0,216,255,0.8)]'
-                      : 'group-hover:text-[#00D8FF]'
+                    ? 'text-[#00D8FF] drop-shadow-[0_0_6px_rgba(0,216,255,0.8)]'
+                    : 'group-hover:text-[#00D8FF]'
                     }`} />
                   <span className="font-medium text-sm">{item.label}</span>
                   {isActive && (
@@ -67,6 +85,20 @@ export default function Sidebar() {
               </li>
             );
           })}
+
+          {/* Bespoke Projects — SSO button */}
+          <li>
+            <button
+              onClick={handleBespokeSSO}
+              className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200 group text-slate-400 hover:bg-white/5 hover:text-white border border-transparent"
+            >
+              <Puzzle className="w-4 h-4 flex-shrink-0 transition-all duration-200 group-hover:text-[#00D8FF]" />
+              <span className="font-medium text-sm">Bespoke Projects</span>
+              <svg className="w-3 h-3 ml-auto opacity-40 group-hover:opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+            </button>
+          </li>
         </ul>
       </nav>
 

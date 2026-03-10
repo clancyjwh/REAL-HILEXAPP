@@ -516,18 +516,19 @@ export default function MyWatchlistPage() {
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-amber-500/10 rounded-lg">
-              <Star className="w-6 h-6 text-amber-500" />
+            <div className="p-2 rounded-lg" style={{ background: 'rgba(0,216,255,0.1)' }}>
+              <Star className="w-6 h-6" style={{ color: '#00D8FF' }} />
             </div>
             <div>
-              <h1 className="text-4xl font-bold text-white">My Watchlist</h1>
+              <h1 className="text-4xl font-bold text-white tracking-tight">My Watchlist</h1>
               <p className="text-slate-400">Track your favorite assets</p>
             </div>
           </div>
           <button
             onClick={() => setShowSearch(true)}
             disabled={watchlistAssets.length >= userMaxSlots}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-700 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200"
+            className="flex items-center gap-2 font-semibold py-3 px-6 rounded-lg transition-all duration-200 text-black disabled:opacity-40 disabled:cursor-not-allowed"
+            style={{ background: watchlistAssets.length >= userMaxSlots ? 'rgba(255,255,255,0.08)' : '#00D8FF', boxShadow: watchlistAssets.length >= userMaxSlots ? 'none' : '0 0 20px rgba(0,216,255,0.3)', color: watchlistAssets.length >= userMaxSlots ? '#64748b' : '#000' }}
           >
             <Plus className="w-5 h-5" />
             Add Assets
@@ -654,8 +655,8 @@ export default function MyWatchlistPage() {
                   ) : (
                     <>
                       <div className="flex items-center gap-2 mb-3">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                        <div className="text-sm font-semibold text-blue-400">Loading...</div>
+                        <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: '#00D8FF' }} />
+                        <div className="text-sm font-semibold" style={{ color: '#00D8FF' }}>Loading...</div>
                       </div>
                       <div className="text-xs text-slate-500 text-center">Analyzing market data</div>
                     </>
@@ -669,7 +670,10 @@ export default function MyWatchlistPage() {
             <div
               key={`empty-${index}`}
               onClick={() => setShowSearch(true)}
-              className="bg-slate-900 border-2 border-dashed border-slate-700 rounded-xl p-6 cursor-pointer hover:border-slate-600 hover:bg-slate-800 transition-all duration-200 h-48"
+              className="rounded-xl p-6 cursor-pointer transition-all duration-200 h-48 border-2 border-dashed"
+              style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(0,216,255,0.2)' }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(0,216,255,0.5)'; (e.currentTarget as HTMLElement).style.background = 'rgba(0,216,255,0.05)'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(0,216,255,0.2)'; (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.03)'; }}
             >
               <div className="flex flex-col items-center justify-center h-full">
                 <div className="p-3 bg-slate-800 rounded-full mb-3">
@@ -815,9 +819,9 @@ export default function MyWatchlistPage() {
                         }}
                         placeholder={
                           selectedAssetClass === 'stocks' ? 'Search by ticker or company name...' :
-                          selectedAssetClass === 'crypto' ? 'e.g., BTC, ETH, SOL' :
-                          selectedAssetClass === 'forex' ? 'e.g., EURUSD, GBPUSD' :
-                          'e.g., XAU/USD, WTI/USD, NG/USD, HG1'
+                            selectedAssetClass === 'crypto' ? 'e.g., BTC, ETH, SOL' :
+                              selectedAssetClass === 'forex' ? 'e.g., EURUSD, GBPUSD' :
+                                'e.g., XAU/USD, WTI/USD, NG/USD, HG1'
                         }
                         autoFocus
                         className="w-full pl-12 pr-4 py-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
