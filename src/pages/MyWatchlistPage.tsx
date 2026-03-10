@@ -905,17 +905,17 @@ export default function MyWatchlistPage() {
         <div className="mb-6">
           <h2 className="text-3xl font-bold text-white">Live Prices</h2>
           <p className="text-slate-400 text-sm mt-1">
-            {livePrices.filter(p => p.current_price !== null && p.current_price !== undefined).length} / {isPremium ? 5 : 1} slots filled {!isPremium && <span className="text-amber-500">(Free tier)</span>}
+            {livePrices.filter(p => p.current_price !== null && p.current_price !== undefined).length} / {isPremium ? 6 : 1} slots filled {!isPremium && <span className="text-amber-500">(Free tier)</span>}
           </p>
           {!isPremium && (
             <p className="text-amber-500 text-xs font-medium mt-1">
-              Upgrade to Premium for 5 live price slots
+              Upgrade to Premium for 6 live price slots
             </p>
           )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-4">
-          {Array.from({ length: 5 }, (_, i) => i + 1).map((slot) => {
+          {Array.from({ length: 6 }, (_, i) => i + 1).map((slot) => {
             const priceItem = livePrices.find(p => p.slot_position === slot);
             const isLocked = !isPremium && slot > 1;
             const canAdd = isPremium || (!isPremium && slot === 1 && livePrices.length === 0);
