@@ -1,0 +1,78 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  ::selection {
+    background-color: rgba(0, 216, 255, 0.3);
+    color: #ffffff;
+  }
+}
+
+@keyframes shimmer {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-scroll {
+  animation: scroll 45s linear infinite;
+  animation-play-state: running;
+}
+
+@keyframes pulse-green {
+  0%, 70% {
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+    filter: brightness(1);
+  }
+  85% {
+    box-shadow: 0 0 40px rgba(16, 185, 129, 0.6);
+    filter: brightness(1.08);
+  }
+  100% {
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+    filter: brightness(1);
+  }
+}
+
+@keyframes pulse-red {
+  0%, 70% {
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+    filter: brightness(1);
+  }
+  85% {
+    box-shadow: 0 0 40px rgba(239, 68, 68, 0.6);
+    filter: brightness(1.08);
+  }
+  100% {
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+    filter: brightness(1);
+  }
+}
+
+.animate-pulse-green {
+  animation: pulse-green 5s ease-in-out infinite;
+}
+
+.animate-pulse-red {
+  animation: pulse-red 5s ease-in-out infinite;
+}
+
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
