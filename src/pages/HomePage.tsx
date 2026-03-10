@@ -594,8 +594,8 @@ export default function HomePage() {
               key={filter}
               onClick={() => toggleFilter(filter)}
               className={`px-3 py-2 rounded-lg text-xs font-semibold tracking-wide transition-all duration-200 whitespace-nowrap border ${activeFilters.has(filter)
-                  ? 'text-[#00D8FF] border-[#00D8FF]/50 shadow-[0_0_12px_rgba(0,216,255,0.25)]'
-                  : 'text-slate-400 border-white/10 hover:border-white/20 hover:text-white'
+                ? 'text-[#00D8FF] border-[#00D8FF]/50 shadow-[0_0_12px_rgba(0,216,255,0.25)]'
+                : 'text-slate-400 border-white/10 hover:border-white/20 hover:text-white'
                 }`}
               style={activeFilters.has(filter) ? { background: 'rgba(0,216,255,0.08)' } : { background: 'rgba(255,255,255,0.03)' }}
             >
@@ -673,8 +673,8 @@ export default function HomePage() {
                       setActiveStoryFilters(new Set());
                     }}
                     className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all border ${storyFilterType === 'topic'
-                        ? 'text-[#00D8FF] border-[#00D8FF]/40'
-                        : 'text-slate-400 border-white/10 hover:border-white/20 hover:text-white'
+                      ? 'text-[#00D8FF] border-[#00D8FF]/40'
+                      : 'text-slate-400 border-white/10 hover:border-white/20 hover:text-white'
                       }`}
                     style={storyFilterType === 'topic' ? { background: 'rgba(0,216,255,0.08)' } : { background: 'transparent' }}
                   >
@@ -686,8 +686,8 @@ export default function HomePage() {
                       setActiveStoryFilters(new Set());
                     }}
                     className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all border ${storyFilterType === 'source'
-                        ? 'text-[#00D8FF] border-[#00D8FF]/40'
-                        : 'text-slate-400 border-white/10 hover:border-white/20 hover:text-white'
+                      ? 'text-[#00D8FF] border-[#00D8FF]/40'
+                      : 'text-slate-400 border-white/10 hover:border-white/20 hover:text-white'
                       }`}
                     style={storyFilterType === 'source' ? { background: 'rgba(0,216,255,0.08)' } : { background: 'transparent' }}
                   >
@@ -703,8 +703,8 @@ export default function HomePage() {
                       key={topic}
                       onClick={() => toggleStoryFilter(topic)}
                       className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border ${activeStoryFilters.has(topic)
-                          ? 'text-[#00D8FF] border-[#00D8FF]/40'
-                          : 'text-slate-400 border-white/10 hover:border-white/20 hover:text-white'
+                        ? 'text-[#00D8FF] border-[#00D8FF]/40'
+                        : 'text-slate-400 border-white/10 hover:border-white/20 hover:text-white'
                         }`}
                       style={activeStoryFilters.has(topic) ? { background: 'rgba(0,216,255,0.08)' } : { background: 'transparent' }}
                     >
@@ -721,8 +721,8 @@ export default function HomePage() {
                       key={source}
                       onClick={() => toggleStoryFilter(source)}
                       className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border ${activeStoryFilters.has(source)
-                          ? 'text-[#00D8FF] border-[#00D8FF]/40'
-                          : 'text-slate-400 border-white/10 hover:border-white/20 hover:text-white'
+                        ? 'text-[#00D8FF] border-[#00D8FF]/40'
+                        : 'text-slate-400 border-white/10 hover:border-white/20 hover:text-white'
                         }`}
                       style={activeStoryFilters.has(source) ? { background: 'rgba(0,216,255,0.08)' } : { background: 'transparent' }}
                     >
@@ -770,22 +770,7 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* WatchDog Ad */}
-      <div className="mt-6 mb-2">
-        <a
-          href="https://watchdog.ltd"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center justify-center gap-6 p-5 rounded-xl border border-white/10 transition-all duration-300 hover:border-white/20 group"
-          style={{ background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(12px)' }}
-        >
-          <span className="text-slate-500 text-xs font-semibold tracking-widest uppercase font-mono mr-2">Promoted</span>
-          <div className="flex flex-col items-center gap-1 transition-all duration-300 group-hover:scale-105">
-            <img src="/watchdog.png" alt="WatchDog" className="h-10 w-auto object-contain brightness-0 invert opacity-80 group-hover:opacity-100 transition-opacity" />
-            <span className="text-slate-400 text-xs font-mono tracking-wide group-hover:text-[#00D8FF] transition-colors">Monitor What Matters</span>
-          </div>
-        </a>
-      </div>
+
 
       <Disclaimer />
 

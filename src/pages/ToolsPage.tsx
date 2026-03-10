@@ -197,6 +197,40 @@ export default function ToolsPage() {
 
       <Disclaimer />
 
+      {/* WatchDog Sponsored Ad */}
+      <div className="mt-10">
+        <a
+          href="https://watchdog.ltd"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block rounded-xl overflow-hidden transition-all duration-300 group"
+          style={{
+            background: 'rgba(255,255,255,0.03)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            backdropFilter: 'blur(12px)',
+          }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 32px rgba(0,216,255,0.08)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(0,216,255,0.2)'; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = 'none'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.08)'; }}
+        >
+          <div className="px-5 py-2 flex items-center gap-2" style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+            <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#f97316' }} />
+            <span className="text-xs font-semibold tracking-widest uppercase" style={{ color: '#f97316', fontFamily: 'JetBrains Mono, monospace' }}>Sponsored</span>
+          </div>
+          <div className="py-6 px-6 flex flex-col items-center gap-3">
+            <div className="rounded-xl px-6 py-3 transition-transform duration-300 group-hover:scale-105" style={{ background: '#ffffff' }}>
+              <img src="/watchdog.png" alt="WatchDog" className="h-12 w-auto object-contain" />
+            </div>
+            <p className="text-slate-300 text-sm font-semibold tracking-wide group-hover:text-white transition-colors">Monitor What Matters</p>
+            <span
+              className="text-xs px-3 py-1 rounded-full mt-1 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0"
+              style={{ background: 'rgba(0,216,255,0.1)', color: '#00D8FF', border: '1px solid rgba(0,216,255,0.2)' }}
+            >
+              Visit watchdog.ltd →
+            </span>
+          </div>
+        </a>
+      </div>
+
       <div className="mt-8 flex items-center justify-center gap-6">
         <a
           href="https://www.linkedin.com/search/results/all/?fetchDeterministicClustersOnly=true&heroEntityKey=urn%3Ali%3Aorganization%3A109950133&keywords=hylex%20optimized%20trends&origin=RICH_QUERY_SUGGESTION&position=0&searchId=193d177c-9b19-4dbf-b348-64d3c5bba970&sid=PLZ&spellCorrectionEnabled=false"

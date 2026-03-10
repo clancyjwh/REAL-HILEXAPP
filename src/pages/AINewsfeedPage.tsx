@@ -247,10 +247,9 @@ export default function AINewsfeedPage() {
               background: 'rgba(255,255,255,0.03)',
               border: '1px solid rgba(255,255,255,0.08)',
               backdropFilter: 'blur(12px)',
-              boxShadow: '0 0 0 rgba(0,216,255,0)',
             }}
             onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 32px rgba(0,216,255,0.08)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(0,216,255,0.2)'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 0 0 rgba(0,216,255,0)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.08)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = 'none'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.08)'; }}
           >
             {/* Sponsored label bar */}
             <div className="px-5 py-2 flex items-center gap-2" style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
@@ -258,12 +257,15 @@ export default function AINewsfeedPage() {
               <span className="text-xs font-semibold tracking-widest uppercase" style={{ color: '#f97316', fontFamily: 'JetBrains Mono, monospace' }}>Sponsored</span>
             </div>
             {/* Ad body */}
-            <div className="py-7 px-6 flex flex-col items-center gap-3">
-              <img
-                src="/watchdog.png"
-                alt="WatchDog"
-                className="h-14 w-auto object-contain brightness-0 invert opacity-75 group-hover:opacity-100 transition-opacity duration-300"
-              />
+            <div className="py-6 px-6 flex flex-col items-center gap-3">
+              {/* White pill so black logo is visible */}
+              <div className="rounded-xl px-6 py-3 transition-transform duration-300 group-hover:scale-105" style={{ background: '#ffffff' }}>
+                <img
+                  src="/watchdog.png"
+                  alt="WatchDog"
+                  className="h-12 w-auto object-contain"
+                />
+              </div>
               <p className="text-slate-300 text-sm font-semibold tracking-wide group-hover:text-white transition-colors">
                 Monitor What Matters
               </p>
