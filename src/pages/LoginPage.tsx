@@ -165,14 +165,15 @@ export default function LoginPage() {
               </button>
 
               <div>
-                <button
-                  type="button"
-                  onClick={() => navigate('/landingpage')}
+                <a
+                  href="https://landing.hilex.app"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 text-slate-500 hover:text-slate-300 text-sm font-medium transition-colors duration-200"
                 >
                   <Eye className="w-4 h-4" />
                   View Landing Page
-                </button>
+                </a>
               </div>
             </div>
 
