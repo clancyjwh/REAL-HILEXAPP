@@ -395,7 +395,7 @@ export default function HomePage() {
       const { data, error } = await supabase
         .from('top_stories')
         .select('*')
-        .order('created_at', { ascending: false});
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
 
@@ -455,9 +455,9 @@ export default function HomePage() {
   const filteredAssets = activeFilters.size === 0
     ? assets
     : assets.filter(asset => {
-        const assetClass = getAssetClass(asset.symbol);
-        return activeFilters.has(assetClass);
-      });
+      const assetClass = getAssetClass(asset.symbol);
+      return activeFilters.has(assetClass);
+    });
 
   const toggleStoryFilter = (filter: string) => {
     setActiveStoryFilters(prev => {
@@ -477,14 +477,14 @@ export default function HomePage() {
   const filteredStories = activeStoryFilters.size === 0
     ? topStories
     : topStories.filter(story => {
-        const filterKey = storyFilterType === 'topic' ? story.category : story.source;
-        return filterKey && activeStoryFilters.has(filterKey);
-      });
+      const filterKey = storyFilterType === 'topic' ? story.category : story.source;
+      return filterKey && activeStoryFilters.has(filterKey);
+    });
 
   return (
     <div className="min-h-screen">
       {/* Promoted Sponsors Section */}
-      <div className="mb-6 bg-slate-900 border border-slate-700 rounded-xl p-5 shadow-lg">
+      <div className="mb-6 rounded-xl p-5 border border-white/10" style={{ background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(12px)' }}>
         <div className="flex items-center justify-center gap-8">
           <span className="text-slate-300 text-sm font-semibold tracking-wide mr-2">Promoted:</span>
           <a
@@ -535,7 +535,7 @@ export default function HomePage() {
                     'timestamp': new Date().toISOString(),
                     'event_id': `${userId}-${Date.now()}`,
                     'element_clicked': 'AdvertiserBanner:Blackheath:Logo',
-                    'advertiser_id': 'BLH001',
+                    'advertiser_id': 'BH001',
                   });
 
                   console.log('📦 Final payload:', payload);
@@ -586,69 +586,32 @@ export default function HomePage() {
       </div>
 
       <div className="mb-4 flex items-center justify-between gap-3">
-        <h1 className="text-3xl font-bold text-white whitespace-nowrap">HilEX - Top Movers</h1>
+        <h1 className="text-3xl font-bold text-white whitespace-nowrap tracking-tight">HilEX — <span className="text-[#00D8FF]">Top Movers</span></h1>
 
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => toggleFilter('canadian-stock')}
-            className={`px-3 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
-              activeFilters.has('canadian-stock')
-                ? 'bg-blue-600 text-white border-2 border-blue-500'
-                : 'bg-slate-800 text-slate-400 border-2 border-slate-700 hover:border-slate-600'
-            }`}
-          >
-            Canadian Stocks
-          </button>
-          <button
-            onClick={() => toggleFilter('american-stock')}
-            className={`px-3 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
-              activeFilters.has('american-stock')
-                ? 'bg-blue-600 text-white border-2 border-blue-500'
-                : 'bg-slate-800 text-slate-400 border-2 border-slate-700 hover:border-slate-600'
-            }`}
-          >
-            American Stocks
-          </button>
-          <button
-            onClick={() => toggleFilter('crypto')}
-            className={`px-3 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
-              activeFilters.has('crypto')
-                ? 'bg-blue-600 text-white border-2 border-blue-500'
-                : 'bg-slate-800 text-slate-400 border-2 border-slate-700 hover:border-slate-600'
-            }`}
-          >
-            Crypto
-          </button>
-          <button
-            onClick={() => toggleFilter('forex')}
-            className={`px-3 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
-              activeFilters.has('forex')
-                ? 'bg-blue-600 text-white border-2 border-blue-500'
-                : 'bg-slate-800 text-slate-400 border-2 border-slate-700 hover:border-slate-600'
-            }`}
-          >
-            Foreign Exchange
-          </button>
-          <button
-            onClick={() => toggleFilter('commodity')}
-            className={`px-3 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
-              activeFilters.has('commodity')
-                ? 'bg-blue-600 text-white border-2 border-blue-500'
-                : 'bg-slate-800 text-slate-400 border-2 border-slate-700 hover:border-slate-600'
-            }`}
-          >
-            Commodities
-          </button>
+          {(['canadian-stock', 'american-stock', 'crypto', 'forex', 'commodity'] as const).map((filter) => (
+            <button
+              key={filter}
+              onClick={() => toggleFilter(filter)}
+              className={`px-3 py-2 rounded-lg text-xs font-semibold tracking-wide transition-all duration-200 whitespace-nowrap border ${activeFilters.has(filter)
+                  ? 'text-[#00D8FF] border-[#00D8FF]/50 shadow-[0_0_12px_rgba(0,216,255,0.25)]'
+                  : 'text-slate-400 border-white/10 hover:border-white/20 hover:text-white'
+                }`}
+              style={activeFilters.has(filter) ? { background: 'rgba(0,216,255,0.08)' } : { background: 'rgba(255,255,255,0.03)' }}
+            >
+              {filter === 'canadian-stock' ? 'CA Stocks' : filter === 'american-stock' ? 'US Stocks' : filter === 'forex' ? 'Forex' : filter === 'commodity' ? 'Commodities' : 'Crypto'}
+            </button>
+          ))}
         </div>
       </div>
 
       {loading ? (
         <div className="flex items-center justify-center py-20">
-          <div className="text-white text-xl">Loading top movers...</div>
+          <div className="text-[#00D8FF] text-lg font-mono animate-pulse">Loading top movers...</div>
         </div>
       ) : filteredAssets.length === 0 ? (
         <div className="flex items-center justify-center py-20">
-          <div className="text-slate-400 text-xl">No assets match the selected filters</div>
+          <div className="text-slate-500 text-lg font-mono">No assets match the selected filters</div>
         </div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-2.5">
@@ -685,11 +648,11 @@ export default function HomePage() {
 
       {topStories.length > 0 && (
         <div className="mt-6">
-          <div className="bg-slate-900/50 border border-slate-700 rounded-2xl p-8">
+          <div className="rounded-2xl p-8 border border-white/10" style={{ background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(12px)' }}>
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-500/10 rounded-lg">
-                  <Newspaper className="w-6 h-6 text-blue-500" />
+                <div className="p-2 rounded-lg" style={{ background: 'rgba(0,216,255,0.1)' }}>
+                  <Newspaper className="w-6 h-6 text-[#00D8FF]" />
                 </div>
                 <h2 className="text-3xl font-bold text-white">Today's Top Stories</h2>
               </div>
@@ -702,18 +665,18 @@ export default function HomePage() {
 
             <div className="mb-6">
               <div className="flex items-center gap-4 mb-4">
-                <span className="text-white font-semibold">Filter By:</span>
+                <span className="text-slate-400 text-sm font-semibold tracking-wide uppercase font-mono">Filter By:</span>
                 <div className="flex gap-2">
                   <button
                     onClick={() => {
                       setStoryFilterType('topic');
                       setActiveStoryFilters(new Set());
                     }}
-                    className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                      storyFilterType === 'topic'
-                        ? 'bg-blue-600 text-white border-2 border-blue-500'
-                        : 'bg-slate-800 text-slate-400 border-2 border-slate-700 hover:border-slate-600'
-                    }`}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all border ${storyFilterType === 'topic'
+                        ? 'text-[#00D8FF] border-[#00D8FF]/40'
+                        : 'text-slate-400 border-white/10 hover:border-white/20 hover:text-white'
+                      }`}
+                    style={storyFilterType === 'topic' ? { background: 'rgba(0,216,255,0.08)' } : { background: 'transparent' }}
                   >
                     Topic
                   </button>
@@ -722,11 +685,11 @@ export default function HomePage() {
                       setStoryFilterType('source');
                       setActiveStoryFilters(new Set());
                     }}
-                    className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                      storyFilterType === 'source'
-                        ? 'bg-blue-600 text-white border-2 border-blue-500'
-                        : 'bg-slate-800 text-slate-400 border-2 border-slate-700 hover:border-slate-600'
-                    }`}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all border ${storyFilterType === 'source'
+                        ? 'text-[#00D8FF] border-[#00D8FF]/40'
+                        : 'text-slate-400 border-white/10 hover:border-white/20 hover:text-white'
+                      }`}
+                    style={storyFilterType === 'source' ? { background: 'rgba(0,216,255,0.08)' } : { background: 'transparent' }}
                   >
                     Source
                   </button>
@@ -734,16 +697,16 @@ export default function HomePage() {
               </div>
 
               {storyFilterType === 'topic' && availableTopics.length > 0 && (
-                <div className="flex flex-wrap gap-3">
+                <div className="flex flex-wrap gap-2">
                   {availableTopics.map(topic => (
                     <button
                       key={topic}
                       onClick={() => toggleStoryFilter(topic)}
-                      className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                        activeStoryFilters.has(topic)
-                          ? 'bg-green-600 text-white border-2 border-green-500'
-                          : 'bg-slate-800 text-slate-400 border-2 border-slate-700 hover:border-slate-600'
-                      }`}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border ${activeStoryFilters.has(topic)
+                          ? 'text-[#00D8FF] border-[#00D8FF]/40'
+                          : 'text-slate-400 border-white/10 hover:border-white/20 hover:text-white'
+                        }`}
+                      style={activeStoryFilters.has(topic) ? { background: 'rgba(0,216,255,0.08)' } : { background: 'transparent' }}
                     >
                       {topic}
                     </button>
@@ -752,16 +715,16 @@ export default function HomePage() {
               )}
 
               {storyFilterType === 'source' && availableSources.length > 0 && (
-                <div className="flex flex-wrap gap-3">
+                <div className="flex flex-wrap gap-2">
                   {availableSources.map(source => (
                     <button
                       key={source}
                       onClick={() => toggleStoryFilter(source)}
-                      className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                        activeStoryFilters.has(source)
-                          ? 'bg-green-600 text-white border-2 border-green-500'
-                          : 'bg-slate-800 text-slate-400 border-2 border-slate-700 hover:border-slate-600'
-                      }`}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border ${activeStoryFilters.has(source)
+                          ? 'text-[#00D8FF] border-[#00D8FF]/40'
+                          : 'text-slate-400 border-white/10 hover:border-white/20 hover:text-white'
+                        }`}
+                      style={activeStoryFilters.has(source) ? { background: 'rgba(0,216,255,0.08)' } : { background: 'transparent' }}
                     >
                       {source}
                     </button>
@@ -777,14 +740,17 @@ export default function HomePage() {
                   href={story.link}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block bg-slate-800/70 border border-slate-700/50 rounded-xl p-6 hover:border-blue-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/10 cursor-pointer"
+                  className="block rounded-xl p-6 border border-white/8 hover:border-[#00D8FF]/30 transition-all duration-300 hover:shadow-lg cursor-pointer"
+                  style={{ background: 'rgba(255,255,255,0.03)' }}
+                  onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 4px 30px rgba(0,216,255,0.08)')}
+                  onMouseLeave={e => (e.currentTarget.style.boxShadow = 'none')}
                 >
                   <div className="flex items-start justify-between gap-4 mb-3">
-                    <h3 className="text-xl font-bold text-white hover:text-blue-400 transition-colors flex-1">
+                    <h3 className="text-xl font-bold text-white hover:text-[#00D8FF] transition-colors flex-1 tracking-tight">
                       {cleanHeadline(story.headline)}
                     </h3>
                     {story.category && (
-                      <span className="px-3 py-1 bg-blue-500/20 border border-blue-500/30 rounded-full text-blue-300 text-sm font-medium shrink-0">
+                      <span className="px-3 py-1 rounded-full text-[#00D8FF] text-xs font-semibold shrink-0 font-mono" style={{ background: 'rgba(0,216,255,0.1)', border: '1px solid rgba(0,216,255,0.25)' }}>
                         {story.category}
                       </span>
                     )}
@@ -803,6 +769,23 @@ export default function HomePage() {
           </div>
         </div>
       )}
+
+      {/* WatchDog Ad */}
+      <div className="mt-6 mb-2">
+        <a
+          href="https://watchdog.ltd"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-center gap-6 p-5 rounded-xl border border-white/10 transition-all duration-300 hover:border-white/20 group"
+          style={{ background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(12px)' }}
+        >
+          <span className="text-slate-500 text-xs font-semibold tracking-widest uppercase font-mono mr-2">Promoted</span>
+          <div className="flex flex-col items-center gap-1 transition-all duration-300 group-hover:scale-105">
+            <img src="/watchdog.png" alt="WatchDog" className="h-10 w-auto object-contain brightness-0 invert opacity-80 group-hover:opacity-100 transition-opacity" />
+            <span className="text-slate-400 text-xs font-mono tracking-wide group-hover:text-[#00D8FF] transition-colors">Monitor What Matters</span>
+          </div>
+        </a>
+      </div>
 
       <Disclaimer />
 

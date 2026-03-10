@@ -254,7 +254,7 @@ export default function App() {
             path="*"
             element={
               <ProtectedRoute>
-                <div className="min-h-screen bg-slate-950">
+                <div className="min-h-screen bg-[#020617]">
                   <Sidebar />
                   <GlobalSearch />
                   <main className="ml-64 p-8">

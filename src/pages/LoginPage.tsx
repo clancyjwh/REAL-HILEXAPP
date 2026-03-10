@@ -49,115 +49,138 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen bg-[#020617] relative overflow-hidden"
+      style={{
+        backgroundImage: `
+          linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)`,
+        backgroundSize: '50px 50px',
+      }}
+    >
+      {/* Cyan glow blob */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] rounded-full pointer-events-none"
+        style={{ background: 'radial-gradient(ellipse, rgba(0,212,255,0.12) 0%, transparent 65%)', filter: 'blur(80px)' }}
+      />
+
       <LiveMarketBanner />
-      <div className="flex items-center justify-center p-4 min-h-[calc(100vh-60px)]">
+
+      <div className="flex items-center justify-center p-4 min-h-[calc(100vh-60px)] relative z-10">
         <div className="w-full max-w-md">
-          <div className="bg-slate-800 rounded-2xl shadow-2xl p-8 border border-slate-700">
-          <div className="flex items-center justify-center mb-8">
-            <div className="p-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl">
-              <TrendingUp className="w-8 h-8 text-white" />
-            </div>
-          </div>
-
-          <h1 className="text-3xl font-bold text-white text-center mb-2">
-            Welcome to Hilex Optimized Trends
-          </h1>
-          <p className="text-slate-400 text-center mb-8">
-            Log in to access your trend analyses
-          </p>
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-2">
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Enter your email"
-                required
-              />
+          {/* Glass card */}
+          <div className="rounded-2xl shadow-2xl p-8 border border-white/10"
+            style={{ background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }}
+          >
+            {/* Logo */}
+            <div className="flex items-center justify-center mb-8">
+              <div className="p-3 rounded-xl" style={{ background: 'rgba(0,216,255,0.1)', border: '1px solid rgba(0,216,255,0.3)', boxShadow: '0 0 20px rgba(0,216,255,0.2)' }}>
+                <TrendingUp className="w-8 h-8 text-[#00D8FF]" />
+              </div>
             </div>
 
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <label htmlFor="password" className="block text-sm font-medium text-slate-300">
-                  Password
+            <h1 className="text-3xl font-bold text-white text-center mb-2 tracking-tight">
+              Welcome to HilEX
+            </h1>
+            <p className="text-slate-400 text-center mb-8 font-mono text-sm">
+              Optimized Trends Platform
+            </p>
+
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-2">
+                  Email
                 </label>
-                <button
-                  type="button"
-                  onClick={() => navigate('/forgot-password')}
-                  className="text-sm text-blue-400 hover:text-blue-300 transition-colors duration-200"
-                >
-                  Forgot Password?
-                </button>
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full px-4 py-3 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#00D8FF]/50 focus:border-[#00D8FF]/50 transition-all"
+                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)' }}
+                  placeholder="Enter your email"
+                  required
+                />
               </div>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Enter your password"
-                required
-              />
-            </div>
 
-            {error && (
-              <div className="bg-red-900/20 border border-red-700 rounded-lg p-4">
-                <p className="text-red-300 text-sm">{error}</p>
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label htmlFor="password" className="block text-sm font-medium text-slate-300">
+                    Password
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => navigate('/forgot-password')}
+                    className="text-sm text-[#00D8FF] hover:text-white transition-colors duration-200"
+                  >
+                    Forgot Password?
+                  </button>
+                </div>
+                <input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-4 py-3 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#00D8FF]/50 focus:border-[#00D8FF]/50 transition-all"
+                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)' }}
+                  placeholder="Enter your password"
+                  required
+                />
               </div>
-            )}
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold py-3 px-4 rounded-lg hover:from-blue-600 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-800 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              {loading ? (
-                <span>Logging in...</span>
-              ) : (
-                <>
-                  <LogIn className="w-5 h-5" />
-                  <span>Log In</span>
-                </>
+              {error && (
+                <div className="rounded-lg p-4" style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)' }}>
+                  <p className="text-red-400 text-sm">{error}</p>
+                </div>
               )}
-            </button>
-          </form>
 
-          <div className="mt-6 text-center space-y-3">
-            <button
-              type="button"
-              onClick={() => {
-                const redirect = searchParams.get('redirect');
-                navigate(redirect ? `/signup?redirect=${redirect}` : '/signup');
-              }}
-              className="text-blue-400 hover:text-blue-300 text-sm font-medium transition-colors duration-200"
-            >
-              Don't have an account? Create one
-            </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full font-semibold py-3 px-4 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-black"
+                style={{
+                  background: loading ? 'rgba(0,216,255,0.6)' : '#00D8FF',
+                  boxShadow: loading ? 'none' : '0 0 20px rgba(0,212,255,0.35)',
+                }}
+              >
+                {loading ? (
+                  <span className="text-black/80">Logging in...</span>
+                ) : (
+                  <>
+                    <LogIn className="w-5 h-5" />
+                    <span>Log In</span>
+                  </>
+                )}
+              </button>
+            </form>
 
-            <div>
+            <div className="mt-6 text-center space-y-3">
               <button
                 type="button"
-                onClick={() => navigate('/landingpage')}
-                className="inline-flex items-center gap-2 text-slate-400 hover:text-slate-300 text-sm font-medium transition-colors duration-200"
+                onClick={() => {
+                  const redirect = searchParams.get('redirect');
+                  navigate(redirect ? `/signup?redirect=${redirect}` : '/signup');
+                }}
+                className="text-[#00D8FF] hover:text-white text-sm font-medium transition-colors duration-200"
               >
-                <Eye className="w-4 h-4" />
-                View Landing Page
+                Don't have an account? Create one
               </button>
-            </div>
-          </div>
 
-          <div className="mt-6 pt-6 border-t border-slate-700">
-            <p className="text-slate-500 text-xs text-center">
-              Access on desktop for best user experience
-            </p>
-          </div>
+              <div>
+                <button
+                  type="button"
+                  onClick={() => navigate('/landingpage')}
+                  className="inline-flex items-center gap-2 text-slate-500 hover:text-slate-300 text-sm font-medium transition-colors duration-200"
+                >
+                  <Eye className="w-4 h-4" />
+                  View Landing Page
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-6 pt-6 border-t border-white/10">
+              <p className="text-slate-600 text-xs text-center font-mono">
+                Access on desktop for best user experience
+              </p>
+            </div>
           </div>
         </div>
       </div>

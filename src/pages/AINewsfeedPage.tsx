@@ -101,11 +101,11 @@ export default function AINewsfeedPage() {
         )}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-500/10 rounded-lg">
-              <Newspaper className="w-6 h-6 text-blue-500" />
+            <div className="p-2 rounded-lg" style={{ background: 'rgba(0,216,255,0.1)' }}>
+              <Newspaper className="w-6 h-6 text-[#00D8FF]" />
             </div>
             <div>
-              <h1 className="text-4xl font-bold text-white">AI Newsfeed</h1>
+              <h1 className="text-4xl font-bold text-white tracking-tight">AI Newsfeed</h1>
               <p className="text-slate-400 text-base mt-1">
                 News summaries are provided for informational purposes only and<br />
                 should not be used as the sole basis for investment decisions.
@@ -116,33 +116,30 @@ export default function AINewsfeedPage() {
           <div className="flex gap-2">
             <button
               onClick={() => setSearchMode('quick')}
-              className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                searchMode === 'quick'
+              className={`px-4 py-2 rounded-lg font-medium transition-all ${searchMode === 'quick'
                   ? 'bg-orange-600 text-white shadow-lg shadow-orange-500/30'
                   : 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700'
-              }`}
+                }`}
               title="Quick Search - Surface level scan, faster results"
             >
               Quick Search
             </button>
             <button
               onClick={() => setSearchMode('balanced')}
-              className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                searchMode === 'balanced'
+              className={`px-4 py-2 rounded-lg font-medium transition-all ${searchMode === 'balanced'
                   ? 'bg-orange-600 text-white shadow-lg shadow-orange-500/30'
                   : 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700'
-              }`}
+                }`}
               title="Balanced - Moderate depth and speed"
             >
               Balanced
             </button>
             <button
               onClick={() => setSearchMode('deep')}
-              className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                searchMode === 'deep'
+              className={`px-4 py-2 rounded-lg font-medium transition-all ${searchMode === 'deep'
                   ? 'bg-orange-600 text-white shadow-lg shadow-orange-500/30'
                   : 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700'
-              }`}
+                }`}
               title="Deep Dive - More thorough analysis, longer wait time"
             >
               Deep Dive
@@ -154,7 +151,7 @@ export default function AINewsfeedPage() {
 
       <div className="max-w-4xl">
         <form onSubmit={handleSubmit} className="mb-6">
-          <div className="bg-slate-900 border border-slate-700 rounded-xl p-6 relative">
+          <div className="rounded-xl p-6 relative border border-white/10" style={{ background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(12px)' }}>
             <label htmlFor="keywords" className="block text-white font-medium mb-3">
               Enter Asset Ticker or Keywords
             </label>
@@ -167,14 +164,15 @@ export default function AINewsfeedPage() {
                   value={keywords}
                   onChange={(e) => setKeywords(e.target.value.toUpperCase())}
                   placeholder="E.G., AAPL, TSLA, NVDA, TECH STOCKS..."
-                  className="w-full pl-12 pr-4 py-3 bg-slate-800 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
-                  style={{ textTransform: 'uppercase' }}
+                  className="w-full pl-12 pr-4 py-3 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-[#00D8FF] focus:ring-1 focus:ring-[#00D8FF] transition-all"
+                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', textTransform: 'uppercase' }}
                 />
               </div>
               <button
                 type="submit"
                 disabled={!keywords.trim()}
-                className="px-6 py-3 bg-orange-600 hover:bg-orange-700 disabled:bg-slate-700 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors"
+                className="px-6 py-3 font-medium rounded-lg transition-all text-black disabled:opacity-40 disabled:cursor-not-allowed"
+                style={{ background: keywords.trim() ? '#00D8FF' : 'rgba(255,255,255,0.1)', boxShadow: keywords.trim() ? '0 0 20px rgba(0,212,255,0.3)' : 'none', color: keywords.trim() ? '#000' : '#fff' }}
               >
                 Get News
               </button>
@@ -182,12 +180,13 @@ export default function AINewsfeedPage() {
           </div>
         </form>
 
-        <div className="bg-slate-900 border border-slate-700 rounded-xl p-6 mb-6 relative">
+        <div className="rounded-xl p-6 mb-6 relative border border-white/10" style={{ background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(12px)' }}>
           <h3 className="text-white font-medium mb-4">Quick Market Scans</h3>
           <div className="flex justify-center">
             <button
               onClick={() => handleMarketScan('stocks')}
-              className="px-8 py-4 bg-orange-600 hover:bg-orange-700 border border-orange-500 rounded-lg text-white font-medium transition-all shadow-lg shadow-orange-500/20 hover:shadow-orange-500/40"
+              className="px-8 py-4 rounded-lg text-black font-semibold transition-all shadow-lg hover:scale-105"
+              style={{ background: '#00D8FF', boxShadow: '0 0 20px rgba(0,212,255,0.3)' }}
             >
               General Market Scan
             </button>
@@ -195,10 +194,10 @@ export default function AINewsfeedPage() {
         </div>
 
         {topStories.length > 0 && (
-          <div className="bg-slate-900 border border-slate-700 rounded-xl p-6">
+          <div className="rounded-xl p-6 border border-white/10" style={{ background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(12px)' }}>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                <Newspaper className="w-5 h-5 text-blue-500" />
+              <h2 className="text-xl font-bold text-white flex items-center gap-2 tracking-tight">
+                <Newspaper className="w-5 h-5 text-[#00D8FF]" />
                 Today's Top Stories
               </h2>
               {lastCheckedAt && (
@@ -217,9 +216,12 @@ export default function AINewsfeedPage() {
                   href={story.link}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block p-4 bg-slate-800 hover:bg-slate-750 border border-slate-700 hover:border-blue-500 rounded-lg transition-all duration-200 group"
+                  className="block p-4 rounded-lg border border-white/8 hover:border-[#00D8FF]/30 transition-all duration-200 group"
+                  style={{ background: 'rgba(255,255,255,0.03)' }}
+                  onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,216,255,0.08)')}
+                  onMouseLeave={e => (e.currentTarget.style.boxShadow = 'none')}
                 >
-                  <h3 className="text-lg font-semibold text-white group-hover:text-blue-400 mb-2 transition-colors">
+                  <h3 className="text-lg font-semibold text-white group-hover:text-[#00D8FF] mb-2 transition-colors tracking-tight">
                     {story.headline}
                   </h3>
                   <p className="text-slate-300 text-sm leading-relaxed">
@@ -233,6 +235,23 @@ export default function AINewsfeedPage() {
             </div>
           </div>
         )}
+
+        {/* WatchDog Ad */}
+        <div className="mt-6">
+          <a
+            href="https://watchdog.ltd"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-6 p-5 rounded-xl border border-white/10 transition-all duration-300 hover:border-white/20 group"
+            style={{ background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(12px)' }}
+          >
+            <span className="text-slate-500 text-xs font-semibold tracking-widest uppercase font-mono mr-2">Promoted</span>
+            <div className="flex flex-col items-center gap-1 transition-all duration-300 group-hover:scale-105">
+              <img src="/watchdog.png" alt="WatchDog" className="h-10 w-auto object-contain brightness-0 invert opacity-80 group-hover:opacity-100 transition-opacity" />
+              <span className="text-slate-400 text-xs font-mono tracking-wide group-hover:text-[#00D8FF] transition-colors">Monitor What Matters</span>
+            </div>
+          </a>
+        </div>
 
       </div>
       <Disclaimer />
