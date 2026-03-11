@@ -65,6 +65,16 @@ export default function SignupPage() {
       return;
     }
 
+    if (!firstName.trim() || !lastName.trim()) {
+      setMessage("Please enter your full name.");
+      return;
+    }
+
+    if (!email.trim()) {
+      setMessage("Please enter your email address.");
+      return;
+    }
+
     if (!cardComplete) {
       setMessage("Please enter valid payment information to continue.");
       return;
@@ -468,7 +478,7 @@ export default function SignupPage() {
 
         <button
           type="submit"
-          disabled={!agreedToTerms || !isPasswordValid || !doPasswordsMatch || !cardComplete || processing}
+          disabled={!firstName.trim() || !lastName.trim() || !email.trim() || !agreedToTerms || !isPasswordValid || !doPasswordsMatch || !cardComplete || processing}
           className={`p-3 rounded-lg transition-colors font-semibold ${
             agreedToTerms && isPasswordValid && doPasswordsMatch && cardComplete && !processing
               ? "bg-orange-600 text-white hover:bg-orange-700"

@@ -255,6 +255,17 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <div className="min-h-screen bg-[#020617]">
+                  {/* Mobile Restriction Guard */}
+                  <div className="fixed inset-0 z-[9999] bg-slate-900 flex items-center justify-center p-8 text-center md:hidden">
+                    <div className="max-w-md">
+                      <h1 className="text-3xl font-bold text-white mb-4 italic">DESKTOP ACCESS ONLY</h1>
+                      <p className="text-slate-400 mb-6">HilEX Optimized Trends is a heavy-duty analytical platform designed specifically for desktop and laptop environments. Mobile access is currently unsupported to ensure data accuracy and performance.</p>
+                      <div className="p-4 bg-orange-500/10 border border-orange-500/20 rounded-lg">
+                        <p className="text-orange-500 text-sm font-semibold uppercase tracking-wider">Please switch to a desktop or laptop device</p>
+                      </div>
+                    </div>
+                  </div>
+
                   <Sidebar />
                   <GlobalSearch />
                   <main className="ml-64 p-8">
