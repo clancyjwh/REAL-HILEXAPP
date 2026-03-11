@@ -225,12 +225,28 @@ function extractROCData(json1String: string) {
   }
 }
 
+import { verifyWebhookAuth } from '../_shared/auth.ts';
+
 Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, {
       status: 200,
       headers: corsHeaders,
     });
+  }
+
+  const auth = verifyWebhookAuth(req);
+  if (!auth.authorized) {
+    return new Response(
+      JSON.stringify({ success: false, error: auth.error }),
+      {
+        status: 401,
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
   }
 
   try {

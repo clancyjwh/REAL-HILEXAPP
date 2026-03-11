@@ -9,6 +9,8 @@ interface SignupPayload {
   email: string;
 }
 
+import { verifyWebhookAuth } from '../_shared/auth.ts';
+
 Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, {
@@ -17,11 +19,43 @@ Deno.serve(async (req: Request) => {
     });
   }
 
+  const auth = verifyWebhookAuth(req);
+  if (!auth.authorized) {
+    return new Response(
+      JSON.stringify({ success: false, error: auth.error }),
+      {
+        status: 401,
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+  }
+
   try {
     if (req.method === 'POST') {
-      const payload: SignupPayload = await req.json();
+      const payload: any = await req.json();
 
-      const { full_name, email } = payload;
+      const { full_name, email, website } = payload;
+
+      // Honeypot check: If 'website' is filled, it's a bot
+      if (website) {
+        console.warn(`[Security] Bot attempt detected via honeypot from: ${email}`);
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: 'Request suspicious',
+          }),
+          {
+            status: 400,
+            headers: {
+              ...corsHeaders,
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+      }
 
       if (!full_name || !email) {
         return new Response(

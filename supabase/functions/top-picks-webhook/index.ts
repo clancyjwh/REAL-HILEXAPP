@@ -286,6 +286,8 @@ function determineStrongestSignal(indicators: any, dominantIndicator: string | n
   return 'Neutral';
 }
 
+import { verifyWebhookAuth } from '../_shared/auth.ts';
+
 Deno.serve(async (req: Request) => {
   const startTime = Date.now();
   
@@ -296,6 +298,20 @@ Deno.serve(async (req: Request) => {
     });
   }
 
+  const auth = verifyWebhookAuth(req);
+  if (!auth.authorized) {
+    return new Response(
+      JSON.stringify({ success: false, error: auth.error }),
+      {
+        status: 401,
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+  }
+
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -303,80 +319,7 @@ Deno.serve(async (req: Request) => {
 
     // Get source IP and user agent for security logging
     const sourceIp = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
-    const userAgent = req.headers.get('user-agent') || 'unknown';
-    
-    // Security Check 1: IP-based rate limiting
-    const { data: ipCheck } = await supabase.rpc('check_ip_rate_limit', {
-      p_ip_address: sourceIp,
-      p_time_window: '1 hour',
-      p_max_calls: 100
-    });
-
-    if (ipCheck && !ipCheck.allowed) {
-      await supabase.rpc('log_webhook_call', {
-        p_webhook_type: 'top_picks',
-        p_source_ip: sourceIp,
-        p_authenticated: false,
-        p_success: false,
-        p_error_message: 'IP rate limit exceeded',
-        p_response_time_ms: Date.now() - startTime
-      });
-
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: 'Rate limit exceeded',
-          message: ipCheck.message,
-        }),
-        {
-          status: 429,
-          headers: {
-            ...corsHeaders,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-    }
-
-    // Security Check 2: Webhook authentication
-    const providedSecret = req.headers.get('x-webhook-secret');
-    
-    // For backward compatibility, allow requests without secret for now
-    // In production, you should enforce this strictly
-    let authenticated = false;
-    if (providedSecret) {
-      const { data: authCheck } = await supabase.rpc('verify_webhook_auth', {
-        p_webhook_type: 'top_picks',
-        p_provided_secret: providedSecret
-      });
-      authenticated = authCheck === true;
-      
-      if (!authenticated) {
-        await supabase.rpc('log_webhook_call', {
-          p_webhook_type: 'top_picks',
-          p_source_ip: sourceIp,
-          p_authenticated: false,
-          p_success: false,
-          p_error_message: 'Invalid webhook secret',
-          p_response_time_ms: Date.now() - startTime
-        });
-
-        return new Response(
-          JSON.stringify({
-            success: false,
-            error: 'Unauthorized',
-            message: 'Invalid webhook secret',
-          }),
-          {
-            status: 401,
-            headers: {
-              ...corsHeaders,
-              'Content-Type': 'application/json',
-            },
-          }
-        );
-      }
-    }
+    const authenticated = true; // Since verifyWebhookAuth passed
 
     if (req.method === 'POST') {
       const rawBody = await req.text();

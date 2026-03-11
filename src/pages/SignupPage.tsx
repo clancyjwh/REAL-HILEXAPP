@@ -12,6 +12,7 @@ export default function SignupPage() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [businessName, setBusinessName] = useState("");
+  const [website, setWebsite] = useState(""); // Honeypot field
   const [message, setMessage] = useState("");
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
@@ -101,6 +102,7 @@ export default function SignupPage() {
           headers: {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+            "X-API-Key": import.meta.env.VITE_SUPABASE_ANON_KEY,
           },
           body: JSON.stringify({ email }),
         }
@@ -199,10 +201,12 @@ export default function SignupPage() {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
+                'X-API-Key': import.meta.env.VITE_SUPABASE_ANON_KEY,
               },
               body: JSON.stringify({
                 full_name: fullName,
                 email: email,
+                website: website, // Include honeypot for backend check
               }),
             });
           } catch (error) {
@@ -267,6 +271,18 @@ export default function SignupPage() {
           required
           className="border border-slate-600 bg-slate-700 text-white p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
         />
+
+        {/* Honeypot field - Visually hidden to humans, but bots will fill it */}
+        <div style={{ display: 'none' }} aria-hidden="true">
+          <input
+            type="text"
+            name="website"
+            value={website}
+            onChange={(e) => setWebsite(e.target.value)}
+            tabIndex={-1}
+            autoComplete="off"
+          />
+        </div>
 
         <input
           type="email"

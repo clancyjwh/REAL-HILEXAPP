@@ -20,6 +20,8 @@ function handleCorsPrelight(req: Request): Response | null {
   return null;
 }
 
+import { verifyWebhookAuth } from "../_shared/auth.ts";
+
 Deno.serve(async (req: Request) => {
   const corsPreflightResponse = handleCorsPrelight(req);
   if (corsPreflightResponse) {
@@ -27,6 +29,20 @@ Deno.serve(async (req: Request) => {
   }
 
   const corsHeaders = getCorsHeaders();
+
+  const auth = verifyWebhookAuth(req);
+  if (!auth.authorized) {
+    return new Response(
+      JSON.stringify({ error: auth.error }),
+      {
+        status: 401,
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+  }
 
   try {
     const { email } = await req.json();
