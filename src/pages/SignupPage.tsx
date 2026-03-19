@@ -20,13 +20,14 @@ export default function SignupPage() {
   const [cardNumberComplete, setCardNumberComplete] = useState(false);
   const [cardExpiryComplete, setCardExpiryComplete] = useState(false);
   const [cardCvcComplete, setCardCvcComplete] = useState(false);
-  const [processing, setProcessing] = useState(false);
-
-  const cardComplete = cardNumberComplete && cardExpiryComplete && cardCvcComplete;
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const stripe = useStripe();
   const elements = useElements();
+  const plan = searchParams.get("plan");
+  const isFreePlan = plan === "free";
+  const cardComplete = isFreePlan || (cardNumberComplete && cardExpiryComplete && cardCvcComplete);
+  const [processing, setProcessing] = useState(false);
 
   useEffect(() => {
     window.history.pushState(null, '', window.location.href);
@@ -76,71 +77,77 @@ export default function SignupPage() {
       return;
     }
 
-    if (!cardComplete) {
+    if (!isFreePlan && (!cardComplete)) {
       setMessage("Please enter valid payment information to continue.");
       return;
     }
-
-    if (!stripe || !elements) {
+    
+    if (!isFreePlan && (!stripe || !elements)) {
       setMessage("Payment system is not ready. Please refresh and try again.");
       return;
     }
 
     setProcessing(true);
-    setMessage("Validating payment information...");
+    let paymentMethodId = null;
+    let customerId = null;
 
     try {
-      const cardNumberElement = elements.getElement(CardNumberElement);
-      if (!cardNumberElement) {
-        throw new Error("Card element not found");
-      }
-
-      const setupIntentResponse = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-setup-intent`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-            "X-API-Key": import.meta.env.VITE_SUPABASE_ANON_KEY,
-          },
-          body: JSON.stringify({ email }),
+      if (!isFreePlan) {
+        setMessage("Validating payment information...");
+        const cardNumberElement = elements!.getElement(CardNumberElement);
+        if (!cardNumberElement) {
+          throw new Error("Card element not found");
         }
-      );
 
-      if (!setupIntentResponse.ok) {
-        const errorData = await setupIntentResponse.json();
-        throw new Error(errorData.error || "Failed to initialize payment setup");
-      }
-
-      const { clientSecret, customerId } = await setupIntentResponse.json();
-
-      const { setupIntent, error: stripeError } = await stripe.confirmCardSetup(
-        clientSecret,
-        {
-          payment_method: {
-            card: cardNumberElement,
-            billing_details: {
-              email,
-              name: `${firstName} ${lastName}`.trim(),
+        const setupIntentResponse = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-setup-intent`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+              "X-API-Key": import.meta.env.VITE_SUPABASE_ANON_KEY,
             },
-          },
+            body: JSON.stringify({ email }),
+          }
+        );
+
+        if (!setupIntentResponse.ok) {
+          const errorData = await setupIntentResponse.json();
+          throw new Error(errorData.error || "Failed to initialize payment setup");
         }
-      );
 
-      if (stripeError) {
-        setMessage(`Payment validation failed: ${stripeError.message}`);
-        setProcessing(false);
-        return;
+        const setupData = await setupIntentResponse.json();
+        const clientSecret = setupData.clientSecret;
+        customerId = setupData.customerId;
+
+        const { setupIntent, error: stripeError } = await stripe!.confirmCardSetup(
+          clientSecret,
+          {
+            payment_method: {
+              card: cardNumberElement,
+              billing_details: {
+                email,
+                name: `${firstName} ${lastName}`.trim(),
+              },
+            },
+          }
+        );
+
+        if (stripeError) {
+          setMessage(`Payment validation failed: ${stripeError.message}`);
+          setProcessing(false);
+          return;
+        }
+
+        if (!setupIntent?.payment_method) {
+          throw new Error("No payment method returned from Stripe");
+        }
+
+        paymentMethodId = typeof setupIntent.payment_method === 'string'
+          ? setupIntent.payment_method
+          : setupIntent.payment_method.id;
       }
-
-      if (!setupIntent?.payment_method) {
-        throw new Error("No payment method returned from Stripe");
-      }
-
-      const paymentMethodId = typeof setupIntent.payment_method === 'string'
-        ? setupIntent.payment_method
-        : setupIntent.payment_method.id;
 
       setMessage("Creating account...");
 
@@ -167,13 +174,15 @@ export default function SignupPage() {
       if (signUpData.user && signUpData.session) {
         console.log("Auth user created:", signUpData.user.id);
 
-        const { error: customerUpdateError } = await supabase
-          .from('stripe_customers')
-          .update({ payment_method_id: paymentMethodId })
-          .eq('customer_id', customerId);
+        if (!isFreePlan && paymentMethodId && customerId) {
+          const { error: customerUpdateError } = await supabase
+            .from('stripe_customers')
+            .update({ payment_method_id: paymentMethodId })
+            .eq('customer_id', customerId);
 
-        if (customerUpdateError) {
-          console.error("Failed to store payment method:", customerUpdateError);
+          if (customerUpdateError) {
+            console.error("Failed to store payment method:", customerUpdateError);
+          }
         }
 
         const fullName = `${firstName} ${lastName}`.trim();
@@ -327,39 +336,15 @@ export default function SignupPage() {
           </div>
         )}
 
-        <div className="space-y-2">
-          <label className="flex items-center gap-2 text-sm font-semibold text-slate-300">
-            <CreditCard className="w-4 h-4 text-orange-500" />
-            Payment Information
-          </label>
-          <div className="space-y-3">
-            <div className="p-4 bg-slate-700 rounded-lg border border-slate-600">
-              <CardNumberElement
-                options={{
-                  style: {
-                    base: {
-                      fontSize: '16px',
-                      color: '#ffffff',
-                      '::placeholder': {
-                        color: '#94a3b8',
-                      },
-                    },
-                    invalid: {
-                      color: '#ef4444',
-                    },
-                  },
-                  placeholder: 'Card number',
-                  hidePostalCode: true,
-                }}
-                onChange={(e) => {
-                  setCardNumberComplete(e.complete);
-                  setCardError(e.error ? e.error.message : "");
-                }}
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
+        {!isFreePlan && (
+          <div className="space-y-2">
+            <label className="flex items-center gap-2 text-sm font-semibold text-slate-300">
+              <CreditCard className="w-4 h-4 text-orange-500" />
+              Payment Information
+            </label>
+            <div className="space-y-3">
               <div className="p-4 bg-slate-700 rounded-lg border border-slate-600">
-                <CardExpiryElement
+                <CardNumberElement
                   options={{
                     style: {
                       base: {
@@ -373,48 +358,74 @@ export default function SignupPage() {
                         color: '#ef4444',
                       },
                     },
+                    placeholder: 'Card number',
+                    hidePostalCode: true,
                   }}
                   onChange={(e) => {
-                    setCardExpiryComplete(e.complete);
-                    if (e.error) setCardError(e.error.message);
+                    setCardNumberComplete(e.complete);
+                    setCardError(e.error ? e.error.message : "");
                   }}
                 />
               </div>
-              <div className="p-4 bg-slate-700 rounded-lg border border-slate-600">
-                <CardCvcElement
-                  options={{
-                    style: {
-                      base: {
-                        fontSize: '16px',
-                        color: '#ffffff',
-                        '::placeholder': {
-                          color: '#94a3b8',
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-4 bg-slate-700 rounded-lg border border-slate-600">
+                  <CardExpiryElement
+                    options={{
+                      style: {
+                        base: {
+                          fontSize: '16px',
+                          color: '#ffffff',
+                          '::placeholder': {
+                            color: '#94a3b8',
+                          },
+                        },
+                        invalid: {
+                          color: '#ef4444',
                         },
                       },
-                      invalid: {
-                        color: '#ef4444',
+                    }}
+                    onChange={(e) => {
+                      setCardExpiryComplete(e.complete);
+                      if (e.error) setCardError(e.error.message);
+                    }}
+                  />
+                </div>
+                <div className="p-4 bg-slate-700 rounded-lg border border-slate-600">
+                  <CardCvcElement
+                    options={{
+                      style: {
+                        base: {
+                          fontSize: '16px',
+                          color: '#ffffff',
+                          '::placeholder': {
+                            color: '#94a3b8',
+                          },
+                        },
+                        invalid: {
+                          color: '#ef4444',
+                        },
                       },
-                    },
-                    placeholder: 'CVC',
-                  }}
-                  onChange={(e) => {
-                    setCardCvcComplete(e.complete);
-                    if (e.error) setCardError(e.error.message);
-                  }}
-                />
+                      placeholder: 'CVC',
+                    }}
+                    onChange={(e) => {
+                      setCardCvcComplete(e.complete);
+                      if (e.error) setCardError(e.error.message);
+                    }}
+                  />
+                </div>
               </div>
             </div>
+            {cardError && (
+              <div className="flex items-center gap-2 text-sm text-red-500">
+                <XCircle className="w-4 h-4" />
+                <span>{cardError}</span>
+              </div>
+            )}
+            <p className="text-xs text-slate-400">
+              Your card will not be charged now. It will be securely stored for future billing.
+            </p>
           </div>
-          {cardError && (
-            <div className="flex items-center gap-2 text-sm text-red-500">
-              <XCircle className="w-4 h-4" />
-              <span>{cardError}</span>
-            </div>
-          )}
-          <p className="text-xs text-slate-400">
-            Your card will not be charged now. It will be securely stored for future billing.
-          </p>
-        </div>
+        )}
 
         <div className="p-4 bg-slate-700/50 rounded-lg border border-slate-600">
           <div className="text-sm font-semibold text-slate-300 mb-2">Password Requirements:</div>
