@@ -25,9 +25,13 @@ export default function SignupPage() {
   const stripe = useStripe();
   const elements = useElements();
   const plan = searchParams.get("plan");
-  const isFreePlan = plan === "free";
-  const cardComplete = isFreePlan || (cardNumberComplete && cardExpiryComplete && cardCvcComplete);
+  
   const [processing, setProcessing] = useState(false);
+  const [step, setStep] = useState(1);
+  const [selectedPlan, setSelectedPlan] = useState<string | null>(plan);
+
+  // Logical derived state
+  const cardComplete = selectedPlan === 'free' || (cardNumberComplete && cardExpiryComplete && cardCvcComplete);
 
   useEffect(() => {
     window.history.pushState(null, '', window.location.href);
@@ -77,12 +81,12 @@ export default function SignupPage() {
       return;
     }
 
-    if (!isFreePlan && (!cardComplete)) {
+    if (selectedPlan !== "free" && !cardComplete) {
       setMessage("Please enter valid payment information to continue.");
       return;
     }
     
-    if (!isFreePlan && (!stripe || !elements)) {
+    if (selectedPlan !== "free" && (!stripe || !elements)) {
       setMessage("Payment system is not ready. Please refresh and try again.");
       return;
     }
@@ -92,7 +96,7 @@ export default function SignupPage() {
     let customerId = null;
 
     try {
-      if (!isFreePlan) {
+      if (selectedPlan !== "free") {
         setMessage("Validating payment information...");
         const cardNumberElement = elements!.getElement(CardNumberElement);
         if (!cardNumberElement) {
@@ -160,7 +164,6 @@ export default function SignupPage() {
             last_name: lastName,
             business_name: businessName,
           },
-          emailRedirectTo: undefined,
         },
       });
 
@@ -172,9 +175,7 @@ export default function SignupPage() {
       }
 
       if (signUpData.user && signUpData.session) {
-        console.log("Auth user created:", signUpData.user.id);
-
-        if (!isFreePlan && paymentMethodId && customerId) {
+        if (selectedPlan !== "free" && paymentMethodId && customerId) {
           const { error: customerUpdateError } = await supabase
             .from('stripe_customers')
             .update({ payment_method_id: paymentMethodId })
@@ -197,7 +198,7 @@ export default function SignupPage() {
                 display_name: randomAnimalName,
                 notification_preferences: defaultNotificationPreferences,
               })
-              .eq('id', signUpData.user.id);
+              .eq('id', signUpData.user!.id);
           } catch (error) {
             console.error("Background profile update failed:", error);
           }
@@ -215,7 +216,7 @@ export default function SignupPage() {
               body: JSON.stringify({
                 full_name: fullName,
                 email: email,
-                website: website, // Include honeypot for backend check
+                website: website,
               }),
             });
           } catch (error) {
@@ -235,8 +236,7 @@ export default function SignupPage() {
           }
         }, 1000);
       } else if (signUpData.user && !signUpData.session) {
-        console.log("User created but email confirmation is required");
-        setMessage("Email confirmation is enabled. Please disable it in Supabase Auth settings (Authentication > Providers > Email > Confirm email = OFF)");
+        setMessage("Email confirmation is enabled. Please disable it in Supabase Auth settings.");
         setProcessing(false);
       }
     } catch (error) {
@@ -246,510 +246,312 @@ export default function SignupPage() {
     }
   };
 
-  return (
-    <div className="flex items-center justify-center min-h-screen bg-slate-900">
-      <form
-        onSubmit={handleSignup}
-        className="flex flex-col gap-3 max-w-sm w-full mx-auto p-8 bg-slate-800 rounded-xl shadow-xl"
-      >
-        <h1 className="text-3xl font-bold text-white mb-4 text-center">Create Account</h1>
-
+  // UI Step Renderers
+  const renderIdentityStep = () => (
+    <div className="flex flex-col gap-3">
+      <div className="flex gap-2">
         <input
           type="text"
-          placeholder="First name"
+          placeholder="First Name"
           value={firstName}
-          onChange={(e) => setFirstName(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFirstName(e.target.value)}
+          className="p-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 w-1/2"
           required
-          className="border border-slate-600 bg-slate-700 text-white p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
         />
-
         <input
           type="text"
-          placeholder="Last name"
+          placeholder="Last Name"
           value={lastName}
-          onChange={(e) => setLastName(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLastName(e.target.value)}
+          className="p-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 w-1/2"
           required
-          className="border border-slate-600 bg-slate-700 text-white p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
         />
-
+      </div>
+      <input
+        type="text"
+        placeholder="Business Name (Optional)"
+        value={businessName}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setBusinessName(e.target.value)}
+        className="p-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400"
+      />
+      <div style={{ display: 'none' }} aria-hidden="true">
         <input
           type="text"
-          placeholder="Business Name"
-          value={businessName}
-          onChange={(e) => setBusinessName(e.target.value)}
-          required
-          className="border border-slate-600 bg-slate-700 text-white p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+          name="website"
+          value={website}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setWebsite(e.target.value)}
+          tabIndex={-1}
+          autoComplete="off"
         />
+      </div>
+      <input
+        type="email"
+        placeholder="Email Address"
+        value={email}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
+        className="p-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400"
+        required
+      />
+      <input
+        type="password"
+        placeholder="Password"
+        value={password}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
+        className="p-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400"
+        required
+      />
+      <input
+        type="password"
+        placeholder="Confirm Password"
+        value={confirmPassword}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfirmPassword(e.target.value)}
+        className="p-3 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400"
+        required
+      />
 
-        {/* Honeypot field - Visually hidden to humans, but bots will fill it */}
-        <div style={{ display: 'none' }} aria-hidden="true">
-          <input
-            type="text"
-            name="website"
-            value={website}
-            onChange={(e) => setWebsite(e.target.value)}
-            tabIndex={-1}
-            autoComplete="off"
-          />
+      <div className="p-4 bg-slate-700/50 rounded-lg border border-slate-600">
+        <div className="text-xs font-semibold text-slate-300 mb-2 uppercase tracking-wider">Password Requirements</div>
+        <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+          <div className={`flex items-center gap-1.5 text-xs ${passwordRequirements.minLength ? "text-green-400" : "text-slate-500"}`}>
+            {passwordRequirements.minLength ? <CheckCircle2 className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
+            8+ characters
+          </div>
+          <div className={`flex items-center gap-1.5 text-xs ${passwordRequirements.hasUpperCase ? "text-green-400" : "text-slate-500"}`}>
+            {passwordRequirements.hasUpperCase ? <CheckCircle2 className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
+            Uppercase
+          </div>
+          <div className={`flex items-center gap-1.5 text-xs ${passwordRequirements.hasLowerCase ? "text-green-400" : "text-slate-500"}`}>
+            {passwordRequirements.hasLowerCase ? <CheckCircle2 className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
+            Lowercase
+          </div>
+          <div className={`flex items-center gap-1.5 text-xs ${passwordRequirements.hasNumber ? "text-green-400" : "text-slate-500"}`}>
+            {passwordRequirements.hasNumber ? <CheckCircle2 className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
+            Number
+          </div>
+          <div className={`flex items-center gap-1.5 text-xs ${passwordRequirements.hasSymbol ? "text-green-400" : "text-slate-500"}`}>
+            {passwordRequirements.hasSymbol ? <CheckCircle2 className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
+            Symbol
+          </div>
+          <div className={`flex items-center gap-1.5 text-xs ${doPasswordsMatch ? "text-green-400" : "text-slate-500"}`}>
+            {doPasswordsMatch ? <CheckCircle2 className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
+            Matches
+          </div>
         </div>
+      </div>
+      
+      <button
+        type="button"
+        disabled={!firstName.trim() || !lastName.trim() || !email.trim() || !password || !confirmPassword || !isPasswordValid || !doPasswordsMatch}
+        onClick={() => setStep(2)}
+        className="p-3 mt-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:bg-slate-700 disabled:text-slate-500 transition-all font-bold shadow-lg"
+      >
+        Continue to Plans
+      </button>
+    </div>
+  );
 
-        <input
-          type="email"
-          placeholder="Email address"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          className="border border-slate-600 bg-slate-700 text-white p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-        />
+  const renderPlanSelectionStep = () => (
+    <div className="flex flex-col gap-4">
+      <div 
+        onClick={() => setSelectedPlan("free")}
+        className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
+          selectedPlan === "free" ? "border-orange-500 bg-orange-500/10" : "border-slate-700 bg-slate-800/50 hover:border-slate-500"
+        }`}
+      >
+        <div className="flex justify-between items-center mb-1">
+          <span className="font-bold text-white text-lg">Free</span>
+          <span className="text-orange-500 font-bold">$0/mo</span>
+        </div>
+        <p className="text-xs text-slate-400 italic">No credit card required</p>
+      </div>
 
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          className="border border-slate-600 bg-slate-700 text-white p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-        />
+      <div 
+        onClick={() => setSelectedPlan("premium")}
+        className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
+          selectedPlan === "premium" ? "border-orange-500 bg-orange-500/10" : "border-slate-700 bg-slate-800/50 hover:border-slate-500"
+        }`}
+      >
+        <div className="flex justify-between items-center mb-1">
+          <span className="font-bold text-white text-lg">Premium</span>
+          <span className="text-orange-500 font-bold">$199/mo</span>
+        </div>
+        <p className="text-xs text-slate-300">Full access to Hilex tools and indicators</p>
+      </div>
 
-        <input
-          type="password"
-          placeholder="Confirm Password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          required
-          className="border border-slate-600 bg-slate-700 text-white p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-        />
+      <div className="flex gap-3">
+        <button type="button" onClick={() => setStep(1)} className="flex-1 p-3 bg-slate-700 text-white rounded-lg hover:bg-slate-600 font-bold">Back</button>
+        <button
+          type="button"
+          disabled={!selectedPlan}
+          onClick={() => setStep(selectedPlan === "free" ? 4 : 3)}
+          className="flex-1 p-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:bg-slate-700 disabled:text-slate-500 font-bold"
+        >
+          {selectedPlan === "free" ? "Continue" : "Next: Payment"}
+        </button>
+      </div>
+    </div>
+  );
 
-        {confirmPassword.length > 0 && (
-          <div className="flex items-center gap-2 text-sm">
-            {doPasswordsMatch ? (
-              <>
-                <CheckCircle2 className="w-4 h-4 text-green-500" />
-                <span className="text-green-500">Passwords match</span>
-              </>
-            ) : (
-              <>
-                <XCircle className="w-4 h-4 text-red-500" />
-                <span className="text-red-500">Passwords do not match</span>
-              </>
-            )}
+  const renderPaymentStep = () => (
+    <div className="flex flex-col gap-4">
+      <div className="p-4 bg-slate-900/50 rounded-lg border border-slate-700 space-y-4">
+        <div className="flex items-center gap-2 text-white font-bold mb-2">
+          <CreditCard className="w-5 h-5 text-orange-500" />
+          <span>Secure Card Setup</span>
+        </div>
+        
+        <div className="space-y-3">
+          <div className="p-3 bg-slate-800 rounded border border-slate-600 focus-within:border-orange-500 transition-colors">
+            <CardNumberElement 
+              options={{ style: { base: { color: '#fff', fontSize: '16px', '::placeholder': { color: '#64748b' } } } }}
+              onChange={(e) => { setCardNumberComplete(e.complete); if (e.error) setCardError(e.error.message); else setCardError(""); }}
+            />
           </div>
-        )}
-
-        {!isFreePlan && (
-          <div className="space-y-2">
-            <label className="flex items-center gap-2 text-sm font-semibold text-slate-300">
-              <CreditCard className="w-4 h-4 text-orange-500" />
-              Payment Information
-            </label>
-            <div className="space-y-3">
-              <div className="p-4 bg-slate-700 rounded-lg border border-slate-600">
-                <CardNumberElement
-                  options={{
-                    style: {
-                      base: {
-                        fontSize: '16px',
-                        color: '#ffffff',
-                        '::placeholder': {
-                          color: '#94a3b8',
-                        },
-                      },
-                      invalid: {
-                        color: '#ef4444',
-                      },
-                    },
-                    placeholder: 'Card number',
-                    hidePostalCode: true,
-                  }}
-                  onChange={(e) => {
-                    setCardNumberComplete(e.complete);
-                    setCardError(e.error ? e.error.message : "");
-                  }}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="p-4 bg-slate-700 rounded-lg border border-slate-600">
-                  <CardExpiryElement
-                    options={{
-                      style: {
-                        base: {
-                          fontSize: '16px',
-                          color: '#ffffff',
-                          '::placeholder': {
-                            color: '#94a3b8',
-                          },
-                        },
-                        invalid: {
-                          color: '#ef4444',
-                        },
-                      },
-                    }}
-                    onChange={(e) => {
-                      setCardExpiryComplete(e.complete);
-                      if (e.error) setCardError(e.error.message);
-                    }}
-                  />
-                </div>
-                <div className="p-4 bg-slate-700 rounded-lg border border-slate-600">
-                  <CardCvcElement
-                    options={{
-                      style: {
-                        base: {
-                          fontSize: '16px',
-                          color: '#ffffff',
-                          '::placeholder': {
-                            color: '#94a3b8',
-                          },
-                        },
-                        invalid: {
-                          color: '#ef4444',
-                        },
-                      },
-                      placeholder: 'CVC',
-                    }}
-                    onChange={(e) => {
-                      setCardCvcComplete(e.complete);
-                      if (e.error) setCardError(e.error.message);
-                    }}
-                  />
-                </div>
-              </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="p-3 bg-slate-800 rounded border border-slate-600 focus-within:border-orange-500 transition-colors">
+              <CardExpiryElement 
+                options={{ style: { base: { color: '#fff', fontSize: '16px', '::placeholder': { color: '#64748b' } } } }}
+                onChange={(e) => { setCardExpiryComplete(e.complete); if (e.error) setCardError(e.error.message); else setCardError(""); }}
+              />
             </div>
-            {cardError && (
-              <div className="flex items-center gap-2 text-sm text-red-500">
-                <XCircle className="w-4 h-4" />
-                <span>{cardError}</span>
-              </div>
-            )}
-            <p className="text-xs text-slate-400">
-              Your card will not be charged now. It will be securely stored for future billing.
-            </p>
-          </div>
-        )}
-
-        <div className="p-4 bg-slate-700/50 rounded-lg border border-slate-600">
-          <div className="text-sm font-semibold text-slate-300 mb-2">Password Requirements:</div>
-          <div className="space-y-1 text-sm">
-            <div className="flex items-center gap-2">
-              {passwordRequirements.minLength ? (
-                <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
-              ) : (
-                <XCircle className="w-4 h-4 text-slate-500 flex-shrink-0" />
-              )}
-              <span className={passwordRequirements.minLength ? "text-green-500" : "text-slate-400"}>
-                Minimum 8 characters
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              {passwordRequirements.hasUpperCase ? (
-                <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
-              ) : (
-                <XCircle className="w-4 h-4 text-slate-500 flex-shrink-0" />
-              )}
-              <span className={passwordRequirements.hasUpperCase ? "text-green-500" : "text-slate-400"}>
-                At least one uppercase letter
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              {passwordRequirements.hasLowerCase ? (
-                <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
-              ) : (
-                <XCircle className="w-4 h-4 text-slate-500 flex-shrink-0" />
-              )}
-              <span className={passwordRequirements.hasLowerCase ? "text-green-500" : "text-slate-400"}>
-                At least one lowercase letter
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              {passwordRequirements.hasNumber ? (
-                <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
-              ) : (
-                <XCircle className="w-4 h-4 text-slate-500 flex-shrink-0" />
-              )}
-              <span className={passwordRequirements.hasNumber ? "text-green-500" : "text-slate-400"}>
-                At least one number
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              {passwordRequirements.hasSymbol ? (
-                <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
-              ) : (
-                <XCircle className="w-4 h-4 text-slate-500 flex-shrink-0" />
-              )}
-              <span className={passwordRequirements.hasSymbol ? "text-green-500" : "text-slate-400"}>
-                At least one symbol
-              </span>
+            <div className="p-3 bg-slate-800 rounded border border-slate-600 focus-within:border-orange-500 transition-colors">
+              <CardCvcElement 
+                options={{ style: { base: { color: '#fff', fontSize: '16px', '::placeholder': { color: '#64748b' } } } }}
+                onChange={(e) => { setCardCvcComplete(e.complete); if (e.error) setCardError(e.error.message); else setCardError(""); }}
+              />
             </div>
           </div>
         </div>
+      </div>
+      {cardError && <p className="text-red-500 text-xs">{cardError}</p>}
 
-        <div className="flex items-start gap-3 p-4 bg-slate-700/50 rounded-lg border border-slate-600">
-          <input
-            type="checkbox"
-            id="termsCheckbox"
-            checked={agreedToTerms}
-            onChange={(e) => setAgreedToTerms(e.target.checked)}
-            className="mt-1 w-4 h-4 cursor-pointer"
-          />
-          <label htmlFor="termsCheckbox" className="text-sm text-slate-300 cursor-pointer">
-            I agree to the{" "}
-            <button
-              type="button"
-              onClick={() => setShowTermsModal(true)}
-              className="text-orange-500 hover:text-orange-400 underline font-medium"
-            >
-              Hilex Terms and Conditions
-            </button>
-          </label>
-        </div>
+      <div className="flex gap-3">
+        <button type="button" onClick={() => setStep(2)} className="flex-1 p-3 bg-slate-700 text-white rounded-lg hover:bg-slate-600 font-bold">Back</button>
+        <button
+          type="button"
+          disabled={!cardNumberComplete || !cardExpiryComplete || !cardCvcComplete}
+          onClick={() => setStep(4)}
+          className="flex-1 p-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:bg-slate-700 disabled:text-slate-500 font-bold"
+        >
+          Review
+        </button>
+      </div>
+    </div>
+  );
 
+  const renderFinalStep = () => (
+    <div className="flex flex-col gap-4">
+      <div className="p-4 bg-orange-500/5 rounded-lg border border-orange-500/20 text-center">
+        <span className="text-slate-400 text-xs uppercase tracking-widest block mb-1">Plan Selection</span>
+        <span className="text-white font-black text-xl tracking-tighter uppercase italic">{selectedPlan}</span>
+      </div>
+      
+      <div className="flex items-start gap-2 p-1">
+        <input
+          type="checkbox"
+          id="terms"
+          checked={agreedToTerms}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAgreedToTerms(e.target.checked)}
+          className="mt-1 flex-shrink-0"
+          required
+        />
+        <label htmlFor="terms" className="text-xs text-slate-400 leading-normal">
+          I agree to the <button type="button" onClick={() => setShowTermsModal(true)} className="text-orange-500 underline">Terms and Conditions</button> and acknowledge the high risks of trading.
+        </label>
+      </div>
+
+      <div className="flex gap-3 mt-2">
+        <button type="button" onClick={() => setStep(selectedPlan === "free" ? 2 : 3)} className="flex-1 p-3 bg-slate-700 text-white rounded-lg hover:bg-slate-600 font-bold">Back</button>
         <button
           type="submit"
-          disabled={!firstName.trim() || !lastName.trim() || !email.trim() || !agreedToTerms || !isPasswordValid || !doPasswordsMatch || !cardComplete || processing}
-          className={`p-3 rounded-lg transition-colors font-semibold ${
-            agreedToTerms && isPasswordValid && doPasswordsMatch && cardComplete && !processing
-              ? "bg-orange-600 text-white hover:bg-orange-700"
-              : "bg-slate-600 text-slate-400 cursor-not-allowed"
-          }`}
+          disabled={!agreedToTerms || processing}
+          className="flex-[2] p-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:bg-slate-700 disabled:text-slate-500 font-black uppercase tracking-tight shadow-xl active:scale-95 transition-all"
         >
-          {processing ? "Processing..." : "Create Account"}
+          {processing ? "Starting..." : "Complete Setup"}
         </button>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-slate-900 p-4">
+      <form
+        onSubmit={handleSignup}
+        className="flex flex-col gap-4 max-w-sm w-full mx-auto p-8 bg-slate-800 rounded-xl shadow-2xl border border-slate-700"
+      >
+        <div className="flex items-center justify-between mb-2">
+          <h1 className="text-2xl font-black text-white italic tracking-tighter uppercase">
+            {step === 1 && "Identity"}
+            {step === 2 && "Plan"}
+            {step === 3 && "Payment"}
+            {step === 4 && "Finalize"}
+          </h1>
+          <div className="flex gap-1.5">
+            {[1, 2, 3, 4].map((s) => (
+              <div key={s} className={`w-2 h-2 rounded-full transition-all duration-300 ${step === s ? 'bg-orange-500 w-4' : 'bg-slate-700'}`} />
+            ))}
+          </div>
+        </div>
+
+        {step === 1 && renderIdentityStep()}
+        {step === 2 && renderPlanSelectionStep()}
+        {step === 3 && renderPaymentStep()}
+        {step === 4 && renderFinalStep()}
 
         <button
           type="button"
-          onClick={() => {
-            const redirect = searchParams.get('redirect');
-            if (redirect) {
-              navigate(`/login?redirect=${redirect}`);
-            } else {
-              navigate('/login');
-            }
-          }}
-          className="flex items-center justify-center gap-2 p-3 rounded-lg bg-slate-700 text-slate-300 hover:bg-slate-600 hover:text-white transition-colors font-semibold"
+          onClick={() => navigate("/login")}
+          className="text-xs text-slate-500 hover:text-white transition-colors mt-6 uppercase tracking-widest font-bold flex items-center justify-center gap-1.5"
         >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Login
+          <ArrowLeft className="w-3 h-3" /> Already have an account? Login
         </button>
 
-        {message && <p className="text-sm text-center mt-2 text-white">{message}</p>}
+        {message && (
+          <p className={`text-xs text-center mt-4 p-3 rounded border font-bold uppercase tracking-tight ${
+            message.includes('successfully') ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20'
+          }`}>
+            {message}
+          </p>
+        )}
       </form>
 
       {showTermsModal && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-          <div className="bg-slate-800 rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border-2 border-slate-600">
-            <div className="p-8">
-              <div className="text-center border-b-2 border-slate-600 pb-6 mb-6">
-                <h1 className="text-3xl font-bold text-white mb-2">HYLEX OPTIMIZED TRENDS</h1>
-                <h2 className="text-xl text-slate-300">TERMS OF SERVICE AND USER AGREEMENT</h2>
-                <p className="text-sm text-slate-400 mt-4">Last Updated: November 7, 2025</p>
-              </div>
-
-              <div className="space-y-6 text-slate-200">
-                <p className="font-bold text-orange-500">PLEASE READ THESE TERMS CAREFULLY BEFORE USING THIS PLATFORM.</p>
-
-                <p>By creating an account and using Hilex ("the Platform," "we," "us," or "our"), you agree to be bound by these Terms of Service. If you do not agree to these terms, you may not use the Platform.</p>
-
-                <div className="border-t border-slate-600 pt-4">
-                  <h3 className="text-xl font-bold text-white mb-3">1. NATURE OF SERVICE</h3>
-                  <p className="mb-3">Hilex is an educational platform that provides:</p>
-                  <ul className="list-disc pl-6 space-y-1 mb-3">
-                    <li>Technical analysis tools and calculators</li>
-                    <li>Historical market data analysis</li>
-                    <li>Algorithmic indicator calculations</li>
-                    <li>Market sentiment summaries</li>
-                    <li>Educational resources about technical analysis</li>
-                  </ul>
-                  <p className="mb-3">The Platform does NOT provide:</p>
-                  <ul className="list-disc pl-6 space-y-1">
-                    <li>Personalized investment advice</li>
-                    <li>Recommendations to buy or sell specific securities</li>
-                    <li>Portfolio management services</li>
-                    <li>Broker-dealer services</li>
-                    <li>Financial planning or advisory services</li>
-                  </ul>
-                </div>
-
-                <div className="border-t border-slate-600 pt-4">
-                  <h3 className="text-xl font-bold text-white mb-3">2. NOT FINANCIAL ADVICE</h3>
-                  <p className="font-bold text-red-400 mb-3">CRITICAL DISCLAIMER:</p>
-                  <p className="mb-3">All information, data, analytical scores, indicator readings, historical accuracy rates, market sentiment labels, and educational content provided on this Platform are for informational and educational purposes only and do NOT constitute financial, investment, trading, or legal advice.</p>
-                  <p className="mb-2">You acknowledge and agree that:</p>
-                  <ul className="list-disc pl-6 space-y-1">
-                    <li>We are NOT a registered investment advisor, broker-dealer, or financial institution</li>
-                    <li>We do NOT provide personalized recommendations tailored to your individual financial situation, goals, or risk tolerance</li>
-                    <li>All analytical outputs are generated by algorithms analyzing publicly available historical data</li>
-                    <li>No content on this Platform should be construed as a solicitation or offer to buy or sell securities</li>
-                    <li>You are solely responsible for your own investment decisions</li>
-                    <li>You should consult with a licensed financial advisor before making any investment decisions</li>
-                  </ul>
-                </div>
-
-                <div className="border-t border-slate-600 pt-4">
-                  <h3 className="text-xl font-bold text-white mb-3">3. PAST PERFORMANCE DISCLAIMER</h3>
-                  <p className="mb-3">Historical performance data, backtests, accuracy rates, win rates, and any references to past results DO NOT guarantee or predict future performance.</p>
-                  <p className="mb-2">You acknowledge that:</p>
-                  <ul className="list-disc pl-6 space-y-1">
-                    <li>Historical accuracy rates reflect past data only</li>
-                    <li>Market conditions change continuously</li>
-                    <li>Technical indicators can and do fail</li>
-                    <li>No strategy, parameter set, or analytical approach guarantees profitable outcomes</li>
-                    <li>Past success does not ensure future success</li>
-                  </ul>
-                </div>
-
-                <div className="border-t border-slate-600 pt-4">
-                  <h3 className="text-xl font-bold text-white mb-3">4. RISK DISCLOSURE</h3>
-                  <p className="mb-3">Trading and investing in securities, commodities, derivatives, and other financial instruments involve substantial risk of loss. You may lose some or all of your invested capital.</p>
-                  <p className="mb-2">You acknowledge and accept that:</p>
-                  <ul className="list-disc pl-6 space-y-1">
-                    <li>All investments carry risk</li>
-                    <li>You could lose your entire investment</li>
-                    <li>Leveraged trading amplifies both gains and losses</li>
-                    <li>Market volatility can result in rapid losses</li>
-                    <li>We are not responsible for any trading losses you incur</li>
-                    <li>You trade and invest at your own risk</li>
-                  </ul>
-                </div>
-
-                <div className="border-t border-slate-600 pt-4">
-                  <h3 className="text-xl font-bold text-white mb-3">5. NO GUARANTEES OR WARRANTIES</h3>
-                  <p className="mb-3">The Platform and all content are provided "AS IS" without warranties of any kind, either express or implied, including but not limited to:</p>
-                  <ul className="list-disc pl-6 space-y-1 mb-3">
-                    <li>Accuracy, completeness, or reliability of information</li>
-                    <li>Fitness for a particular purpose</li>
-                    <li>Uninterrupted or error-free operation</li>
-                    <li>Freedom from bugs, viruses, or harmful components</li>
-                  </ul>
-                  <p className="mb-2">We do not guarantee:</p>
-                  <ul className="list-disc pl-6 space-y-1">
-                    <li>The accuracy of any data, calculations, or analytical outputs</li>
-                    <li>The performance of any indicators or strategies</li>
-                    <li>The availability or uptime of the Platform</li>
-                    <li>That the Platform meets your specific requirements</li>
-                  </ul>
-                </div>
-
-                <div className="border-t border-slate-600 pt-4">
-                  <h3 className="text-xl font-bold text-white mb-3">6. LIMITATION OF LIABILITY</h3>
-                  <p className="mb-3">To the fullest extent permitted by law, Hilex, its owners, operators, employees, and affiliates shall NOT be liable for any:</p>
-                  <ul className="list-disc pl-6 space-y-1 mb-3">
-                    <li>Direct, indirect, incidental, special, or consequential damages</li>
-                    <li>Loss of profits, revenue, data, or business opportunities</li>
-                    <li>Trading losses or investment losses of any kind</li>
-                    <li>Damages arising from your use or inability to use the Platform</li>
-                    <li>Damages arising from errors, omissions, or inaccuracies in content</li>
-                    <li>Damages arising from third-party actions or content</li>
-                  </ul>
-                  <p>Your sole remedy for dissatisfaction with the Platform is to discontinue use.</p>
-                </div>
-
-                <div className="border-t border-slate-600 pt-4">
-                  <h3 className="text-xl font-bold text-white mb-3">7. USER RESPONSIBILITIES</h3>
-                  <p className="mb-2">You agree to:</p>
-                  <ul className="list-disc pl-6 space-y-1 mb-3">
-                    <li>Use the Platform for educational purposes only</li>
-                    <li>Conduct your own due diligence before making investment decisions</li>
-                    <li>Verify all information independently</li>
-                    <li>Consult qualified professionals (financial advisors, tax advisors, legal counsel) before acting on any information</li>
-                    <li>Not rely solely on Platform outputs for investment decisions</li>
-                    <li>Take full responsibility for your investment outcomes</li>
-                    <li>Comply with all applicable laws and regulations</li>
-                  </ul>
-                  <p className="mb-2">You agree NOT to:</p>
-                  <ul className="list-disc pl-6 space-y-1">
-                    <li>Use the Platform for illegal purposes</li>
-                    <li>Attempt to manipulate, hack, or disrupt the Platform</li>
-                    <li>Share your account credentials with others</li>
-                    <li>Scrape, copy, or redistribute Platform content without permission</li>
-                    <li>Misrepresent the Platform's capabilities to others</li>
-                    <li>Use the Platform in violation of securities laws or regulations</li>
-                  </ul>
-                </div>
-
-                <div className="border-t border-slate-600 pt-4">
-                  <h3 className="text-xl font-bold text-white mb-3">8. DATA AND INFORMATION SOURCES</h3>
-                  <p className="mb-3">All market data and information are obtained from third-party sources we believe to be reliable, but we do not guarantee their accuracy, completeness, or timeliness.</p>
-                  <p className="mb-2">You acknowledge that:</p>
-                  <ul className="list-disc pl-6 space-y-1">
-                    <li>Data may contain errors, delays, or omissions</li>
-                    <li>We are not responsible for third-party data inaccuracies</li>
-                    <li>You should verify all information through official sources</li>
-                    <li>Market data is provided for informational purposes only</li>
-                  </ul>
-                </div>
-
-                <div className="border-t border-slate-600 pt-4">
-                  <h3 className="text-xl font-bold text-white mb-3">9. INTELLECTUAL PROPERTY</h3>
-                  <p className="mb-3">All content, algorithms, design elements, trademarks, and intellectual property on the Platform are owned by or licensed to Hilex and are protected by copyright, trademark, and other intellectual property laws.</p>
-                  <p className="mb-2">You may not:</p>
-                  <ul className="list-disc pl-6 space-y-1">
-                    <li>Reproduce, distribute, or create derivative works without permission</li>
-                    <li>Reverse-engineer our algorithms or proprietary methods</li>
-                    <li>Remove copyright or proprietary notices</li>
-                  </ul>
-                </div>
-
-                <div className="border-t border-slate-600 pt-4">
-                  <h3 className="text-xl font-bold text-white mb-3">10. ACCOUNT TERMINATION</h3>
-                  <p className="mb-2">We reserve the right to suspend or terminate your account at any time, with or without notice, for:</p>
-                  <ul className="list-disc pl-6 space-y-1">
-                    <li>Violation of these Terms</li>
-                    <li>Fraudulent, abusive, or illegal activity</li>
-                    <li>Any reason at our sole discretion</li>
-                  </ul>
-                </div>
-
-                <div className="border-t border-slate-600 pt-4">
-                  <h3 className="text-xl font-bold text-white mb-3">11. MODIFICATIONS TO TERMS</h3>
-                  <p>We may modify these Terms at any time. Continued use of the Platform after changes constitutes acceptance of the modified Terms. We will notify users of material changes via email or Platform notification.</p>
-                </div>
-
-                <div className="border-t border-slate-600 pt-4">
-                  <h3 className="text-xl font-bold text-white mb-3">12. GOVERNING LAW AND DISPUTES</h3>
-                  <p>These Terms are governed by the laws of the United States. Any disputes shall be resolved through binding arbitration, except where prohibited by law.</p>
-                </div>
-
-                <div className="border-t border-slate-600 pt-4">
-                  <h3 className="text-xl font-bold text-white mb-3">13. SEVERABILITY</h3>
-                  <p>If any provision of these Terms is found to be unenforceable, the remaining provisions shall remain in full force and effect.</p>
-                </div>
-
-                <div className="border-t border-slate-600 pt-4">
-                  <h3 className="text-xl font-bold text-white mb-3">14. ENTIRE AGREEMENT</h3>
-                  <p>These Terms constitute the entire agreement between you and Hilex regarding use of the Platform and supersede all prior agreements.</p>
-                </div>
-
-                <div className="border-t border-slate-600 pt-4">
-                  <h3 className="text-xl font-bold text-white mb-3">15. CONTACT INFORMATION</h3>
-                  <p>For questions about these Terms, contact us at: support@hylextrends.com</p>
-                </div>
-
-                <div className="border-t-2 border-slate-600 pt-6 mt-6">
-                  <h3 className="text-xl font-bold text-white mb-3 text-center">ACKNOWLEDGMENT AND ACCEPTANCE</h3>
-                  <p className="text-center">By clicking "I Agree", you acknowledge that you have read, understood, and agree to be bound by these Terms of Service, including all disclaimers regarding the educational nature of the Platform and the substantial risks involved in trading and investing.</p>
-                </div>
-              </div>
-
-              <div className="flex gap-4 mt-8">
-                <button
-                  onClick={() => {
-                    setAgreedToTerms(false);
-                    setShowTermsModal(false);
-                  }}
-                  className="flex-1 px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition-colors"
-                >
-                  I Disagree
-                </button>
-                <button
-                  onClick={() => {
-                    setAgreedToTerms(true);
-                    setShowTermsModal(false);
-                  }}
-                  className="flex-1 px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition-colors"
-                >
-                  I Agree
-                </button>
-              </div>
+        <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4">
+          <div className="bg-slate-800 rounded-xl max-w-2xl w-full max-h-[85vh] overflow-hidden border-2 border-slate-700 shadow-2xl flex flex-col">
+            <div className="p-6 border-b border-slate-700 text-center">
+              <h2 className="text-xl font-black text-white uppercase italic tracking-tighter">Hilex Terms of Service</h2>
+            </div>
+            <div className="p-8 overflow-y-auto text-sm text-slate-300 space-y-6 leading-relaxed">
+              <section>
+                <h3 className="font-bold text-white uppercase text-xs mb-2">1. Nature of Service</h3>
+                <p>Hilex provides educational tools and analysis. We are not a broker, advisor, or investment manager.</p>
+              </section>
+              <section>
+                <h3 className="font-bold text-red-500 uppercase text-xs mb-2">2. Massive Risk Warning</h3>
+                <p className="font-bold italic">Trading financial markets involves extreme risk. You may lose all your capital. Past performance is zero guarantee of future success.</p>
+              </section>
+              <section>
+                <h3 className="font-bold text-white uppercase text-xs mb-2">3. No Guarantees</h3>
+                <p>We provide indicators and data as-is. We do not guarantee accuracy, reliability, or profitability.</p>
+              </section>
+              <section>
+                <h3 className="font-bold text-white uppercase text-xs mb-2">4. Subscriptions</h3>
+                <p>Premium tiers are billed monthly. Cancellations take effect at the end of the current cycle. No refunds.</p>
+              </section>
+            </div>
+            <div className="p-6 border-t border-slate-700 flex gap-4">
+              <button 
+                onClick={() => { setAgreedToTerms(false); setShowTermsModal(false); }}
+                className="flex-1 p-3 bg-slate-700 text-white font-bold rounded-lg uppercase text-xs tracking-widest"
+              >
+                Decline
+              </button>
+              <button 
+                onClick={() => { setAgreedToTerms(true); setShowTermsModal(false); }}
+                className="flex-1 p-3 bg-orange-500 text-white font-bold rounded-lg uppercase text-xs tracking-widest"
+              >
+                Accept & Close
+              </button>
             </div>
           </div>
         </div>
