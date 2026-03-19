@@ -373,7 +373,7 @@ export default function SignupPage() {
       >
         <div className="flex justify-between items-center mb-1">
           <span className="font-bold text-white text-lg">Premium</span>
-          <span className="text-orange-500 font-bold">$199/mo</span>
+          <span className="text-orange-500 font-bold">$1,000/mo + tax</span>
         </div>
         <p className="text-xs text-slate-300">Full access to Hilex tools and indicators</p>
       </div>
